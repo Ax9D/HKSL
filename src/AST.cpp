@@ -1,4 +1,5 @@
 #include <AST.h>
+#include <Printer.h>
 #include <format>
 namespace HKSL {
 
@@ -14,13 +15,15 @@ UnaryExpr::UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr) {
     this->op = op;
     this->expr = std::move(expr);
 }
-ExprKind UnaryExpr::kind() {
+ExprKind UnaryExpr::kind() const {
     return ExprKind::UnaryExpr;
 }
-std::string UnaryExpr::to_string() {
-    return std::format("UnaryExpr {{op: {}, expr: {}}}", unary_op_to_string(op), expr->to_string());
-}
 
+void UnaryExpr::print(Printer& printer) const {
+    NodePrinter node("UnaryExpr", printer);
+    node.field("op", unary_op_to_string(op));
+    node.field("expr", expr.get());
+}
 std::string bin_op_to_string(BinOp op) {
     switch(op) {
             case BinOp::Add:
@@ -40,33 +43,36 @@ BinExpr::BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> rig
     this->left = std::move(left);
     this->right = std::move(right);
 }
-ExprKind BinExpr::kind() {
+ExprKind BinExpr::kind() const {
     return ExprKind::BinExpr;
 }
-std::string BinExpr::to_string() {
-    return std::format("BinExpr {{ op: {}, left: {}, right: {}}}", bin_op_to_string(op), left->to_string(), right->to_string());
+void BinExpr::print(Printer& printer) const {
+    NodePrinter node("BinExpr", printer);
+    node.field("op", bin_op_to_string(op));
+    node.field("left", left.get());
+    node.field("right", right.get());
 }
 
 NumberConstant::NumberConstant(NumberLiteral literal) {
     this->number_literal = literal;
 }
-ExprKind NumberConstant::kind() {
+ExprKind NumberConstant::kind() const {
     return ExprKind::NumberConstant;
 }
 
-std::string NumberConstant::to_string() {
-    return std::format("NumberConstant({})", number_literal.value);
+void NumberConstant::print(Printer& printer) const {
+    printer.print(std::format("NumberConstant({})", number_literal.value));
 }
 
 Variable::Variable(const Identifier& name) {
     this->name = name;
 }
-ExprKind Variable::kind() {
+ExprKind Variable::kind() const {
     return ExprKind::Variable;
 }
 
-std::string Variable::to_string() {
-    return std::format("Variable({})", name.name);
+void Variable::print(Printer& printer) const {
+    printer.print(std::format("Variable({})", name.name));
 }
 
 
@@ -74,11 +80,12 @@ ExprStatement::ExprStatement(std::unique_ptr<Expr> expr) {
     this->expr = std::move(expr);
 }
 
-StatementKind ExprStatement::kind() {
+StatementKind ExprStatement::kind() const {
     return StatementKind::Expr;
 }
 
-std::string ExprStatement::to_string() {
-    return std::format("ExprStatement({})", expr->to_string());
+void ExprStatement::print(Printer& printer) const {
+    NodePrinter node("ExprStatement", printer);
+    node.field("expr", expr.get());
 }
 }

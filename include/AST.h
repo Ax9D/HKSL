@@ -1,8 +1,14 @@
 #pragma once
 #include <string>
 #include <Lexer.h>
+#include <Printer.h>
 
 namespace HKSL {
+
+struct ASTNode: Print {
+    virtual ~ASTNode() = default;
+};
+
 enum class ExprKind {
     BinExpr,
     UnaryExpr,
@@ -12,11 +18,9 @@ enum class ExprKind {
     AssignmentExpr,
 };
 
-struct Expr {
+struct Expr: public ASTNode {
     virtual ~Expr() = default;
-
-    virtual ExprKind kind() = 0;
-    virtual std::string to_string() = 0;
+    virtual ExprKind kind() const = 0;
 };
 
 enum class UnaryOp {
@@ -41,15 +45,15 @@ struct UnaryExpr: public Expr {
     UnaryOp op;
     std::unique_ptr<Expr> expr;
 
-    ExprKind kind() override;
-    std::string to_string() override;
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 };
 
 struct BinExpr: public Expr {
     BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right);
     
-    ExprKind kind() override;
-    std::string to_string() override; 
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 
     BinOp op;
     std::unique_ptr<Expr> left;
@@ -58,16 +62,16 @@ struct BinExpr: public Expr {
 
 struct NumberConstant: public Expr {
     NumberConstant(NumberLiteral literal);
-    ExprKind kind() override;
-    std::string to_string() override;
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 
     NumberLiteral number_literal;
 };
 
 struct Variable: public Expr {
     Variable(const Identifier& name);
-    ExprKind kind() override;
-    std::string to_string() override;
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 
     Identifier name;
 };
@@ -94,34 +98,40 @@ enum class StatementKind {
     VarDeclartion,
 };
 
-struct Statement {
+struct Statement: public ASTNode {
     virtual ~Statement() = default;
 
-    virtual StatementKind kind() = 0;
-    virtual std::string to_string() = 0;
+    virtual StatementKind kind() const = 0;
 };
 
 struct ExprStatement: public Statement {
     ExprStatement(std::unique_ptr<Expr> expr);
     std::unique_ptr<Expr> expr;
     
-    StatementKind kind() override;
-    std::string to_string() override;
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
 };
 
 struct IfStatement: public Statement {
     std::unique_ptr<Expr> condition;
     std::unique_ptr<Statement> else_part = nullptr;
 
-    StatementKind kind() override;
-    std::string to_string() override;
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
 };
 
 struct ElseStatement: public Statement {
     std::unique_ptr<Statement> statement;
 
-    StatementKind kind() override;
-    std::string to_string() override;
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
 };
 
+class AST {
+    public:
+        AST();
+    friend class Parser;
+    private:
+        std::vector<std::unique_ptr<Statement>> statements;
+};
 }
