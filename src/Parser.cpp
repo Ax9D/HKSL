@@ -52,11 +52,15 @@ void Parser::unexpected_token() {
     std::string token = token_kind_to_string(current().kind);
     HKSL_ERROR(std::format("Unexpected token: {} on line {}:{}", token, span.line, span.col));
 }
-void Parser::expect(TokenKind kind) {
+void Parser::expect(TokenKind kind, const char* error) {
     if(!consume(kind)) {
         Span span = current().span;
         std::string token = token_kind_to_string(kind);
-        HKSL_ERROR(std::format("Expected {} on line {}:{}", token, span.line, span.col));
+        if(error) {
+            HKSL_ERROR(std::format("{} on line {}:{}", error, span.line, span.col));  
+        } else {
+            HKSL_ERROR(std::format("Expected {} on line {}:{}", token, span.line, span.col));
+        }
     }
 }
 std::vector<std::unique_ptr<Statement>> Parser::program() {
@@ -105,8 +109,7 @@ std::unique_ptr<Statement> Parser::function() {
     std::optional<Identifier> return_type = std::nullopt;
 
     if(consume(TokenKind::RightArrow)) {
-        return_type = current().unwrap_identifier(); 
-        expect(TokenKind::Identifier);
+        return_type = type();
     }
 
     
@@ -124,11 +127,9 @@ FunctionArgs Parser::function_args() {
             const auto& name = maybe_name.unwrap_identifier();
             expect(TokenKind::Colon);
 
-            const auto& maybe_type = current();
-            expect(TokenKind::Identifier);
-            const auto& type = maybe_type.unwrap_identifier();
+            auto ty = type();
 
-            args.push_back(FunctionArg(name, type));
+            args.push_back(FunctionArg(name, ty));
 
             if(!consume(TokenKind::Comma)) {
                 break;
@@ -153,10 +154,7 @@ std::unique_ptr<Expr> Parser::let() {
 
         if(consume(TokenKind::Colon)) {
             // Is explictly typed
-            const auto& maybe_type = current();
-            expect(TokenKind::Identifier);
-            const auto& type = maybe_type.unwrap_identifier();
-            let_expr->type = type;
+            let_expr->type = type();
         }
         if(consume(TokenKind::Equals)) {
             auto rhs = expr();
@@ -279,5 +277,10 @@ std::unique_ptr<Variable> Parser::variable() {
     const Token& last = current();
     expect(TokenKind::Identifier);
     return std::make_unique<Variable>(last.unwrap_identifier());
+}
+Identifier Parser::type() {
+    const auto& maybe_identifier = current();
+    expect(TokenKind::Identifier, "Expected type");
+    return maybe_identifier.unwrap_identifier();
 }
 }

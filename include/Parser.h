@@ -24,6 +24,7 @@ class Parser {
         std::unique_ptr<Expr> primary();
         std::unique_ptr<Expr> place();
         std::unique_ptr<Variable> variable();
+        Identifier type();
     private:
         const Token& current() const;
         const Token& next() const;
@@ -33,7 +34,7 @@ class Parser {
         bool consume(std::initializer_list<TokenKind> kinds, TokenKind* out_consumed = nullptr);
         bool consume(TokenKind kind, TokenKind* out_consumed = nullptr);  
         void unexpected_token();
-        void expect(TokenKind kind);
+        void expect(TokenKind kind, const char* error = nullptr);
 
         const Token* remaining;
 };
