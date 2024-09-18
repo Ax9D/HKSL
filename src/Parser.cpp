@@ -105,9 +105,10 @@ std::unique_ptr<Statement> Parser::function() {
     std::optional<Identifier> return_type = std::nullopt;
 
     if(consume(TokenKind::RightArrow)) {
-        *return_type = current().unwrap_identifier(); 
+        return_type = current().unwrap_identifier(); 
         expect(TokenKind::Identifier);
     }
+
     
     std::unique_ptr<BlockStatement> block_stmt = block();
 

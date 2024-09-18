@@ -146,7 +146,7 @@ FunctionArg::FunctionArg(const Identifier& name, const Identifier& type) {
 void FunctionArg::print(Printer& printer) const {
     printer.print(std::format("{}: {}", name.name, type.name));
 }
-Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, std::optional<Identifier>& return_type) {
+Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type) {
     this->name = name;
     this->args = args;
     this->block = std::move(block);
@@ -173,6 +173,10 @@ void Function::print(Printer& printer) const {
         for(size_t i = 0; i < block->statements.size(); i++) {
             array.print_item(block->statements[i].get());
         }
+    }
+
+    if(return_type) {
+        node.field("return_type", return_type->name);
     }
 
 }

@@ -160,7 +160,7 @@ struct FunctionArg: Print {
 };
 using FunctionArgs = std::vector<FunctionArg>;
 struct Function: public Statement {
-    Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, std::optional<Identifier>& return_type);
+    Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type);
     Identifier name;
     FunctionArgs args;
     std::unique_ptr<BlockStatement> block;
@@ -169,6 +169,7 @@ struct Function: public Statement {
     StatementKind kind() const override;
     void print(Printer& printer) const override;
 };
+
 class AST {
     public:
         AST();
