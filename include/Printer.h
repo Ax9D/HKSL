@@ -29,7 +29,21 @@ class NodePrinter {
         ~NodePrinter();
         NodePrinter& field(const std::string& name, const std::string& value);
         NodePrinter& field(const std::string& name, const Print* node);
+        NodePrinter& name(const std::string& name);
+        NodePrinter& value(const Print* node);
     private:
         Printer& printer;
+};
+
+
+class ArrayPrinter {
+    public:
+        ArrayPrinter(size_t n, Printer& printer);
+        ~ArrayPrinter();
+        void print_item(const Print* item);
+    private:
+        Printer& printer;
+        size_t i;
+        size_t n;
 };
 }

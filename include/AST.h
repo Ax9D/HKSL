@@ -16,7 +16,10 @@ enum class ExprKind {
     Variable,
     CallExpr,
     AssignmentExpr,
+    LetExpr,
 };
+
+bool expr_kind_is_place(ExprKind kind);
 
 struct Expr: public ASTNode {
     virtual ~Expr() = default;
@@ -77,23 +80,37 @@ struct Variable: public Expr {
 };
 
 struct CallExpr: public Expr {
-    CallExpr(Identifier fn_name, const std::vector<std::unique_ptr<Expr>>& args);
+    CallExpr(const Identifier& fn_name, const std::vector<std::unique_ptr<Expr>>& args);
 
     Identifier fn_name;
     std::vector<std::unique_ptr<Expr>> args;
 };
 
 struct AssignmentExpr: public Expr {
-    AssignmentExpr(Identifier target);
+    AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs);
 
-    Identifier target;
+    std::unique_ptr<Expr> lhs;
     std::unique_ptr<Expr> rhs;
+
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
+};
+
+struct LetExpr: public Expr {
+    LetExpr(std::unique_ptr<Expr> variable, std::unique_ptr<Expr> rhs);
+
+    std::unique_ptr<Expr> variable;
+    std::unique_ptr<Expr> rhs;
+
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 };
 
 enum class StatementKind {
     Expr,
     If,
     Else,
+    Block,
     Function,
     VarDeclartion,
 };
@@ -126,7 +143,32 @@ struct ElseStatement: public Statement {
     StatementKind kind() const override;
     void print(Printer& printer) const override;
 };
+struct BlockStatement: public Statement {
+    BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements);
+    std::vector<std::unique_ptr<Statement>> statements;
 
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
+};
+struct FunctionArg: Print {
+    Identifier name;
+    Identifier type;
+
+    FunctionArg(const Identifier& name, const Identifier& type);
+
+    void print(Printer& printer) const override; 
+};
+using FunctionArgs = std::vector<FunctionArg>;
+struct Function: public Statement {
+    Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, std::optional<Identifier>& return_type);
+    Identifier name;
+    FunctionArgs args;
+    std::unique_ptr<BlockStatement> block;
+    std::optional<Identifier> return_type;
+
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
+};
 class AST {
     public:
         AST();

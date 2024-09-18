@@ -1,6 +1,7 @@
 #include <AST.h>
 #include <Printer.h>
 #include <format>
+#include <cassert>
 
 namespace HKSL {
 Printer::Printer() {
@@ -45,6 +46,17 @@ NodePrinter::~NodePrinter() {
     printer.decrease_depth();
     printer.print_with_indent("}");
 }
+NodePrinter& NodePrinter::name(const std::string& name) {
+    printer.print_with_indent(std::format("{}: ", name));
+
+    return *this;
+}
+NodePrinter& NodePrinter::value(const Print* node) {
+    node->print(printer);
+    printer.println();
+
+    return *this;
+}
 NodePrinter& NodePrinter::field(const std::string &name, const std::string &value) {
     printer.println_with_indent(std::format("{}: {}", name, value));
 
@@ -55,5 +67,29 @@ NodePrinter& NodePrinter::field(const std::string &name, const Print* value) {
     value->print(printer);
     printer.println();
     return *this;
+}
+
+ArrayPrinter::ArrayPrinter(size_t n, Printer& printer_): printer(printer_)  {
+    this->n = n;
+    this->i = 0;
+    printer.println("[");
+    printer.increase_depth();
+}
+ArrayPrinter::~ArrayPrinter() {
+    printer.decrease_depth();
+    printer.println_with_indent("]");
+}
+void ArrayPrinter::print_item(const Print* item) {
+    printer.print_with_indent("");
+    item->print(printer);
+    
+    assert(i < n);
+
+    if(i < n - 1) {
+        printer.print(",");
+    }
+    printer.println();
+
+    i++;
 }
 }

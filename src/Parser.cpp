@@ -1,3 +1,4 @@
+#include "AST.h"
 #include <Parser.h>
 #include <format>
 
@@ -58,7 +59,7 @@ void Parser::expect(TokenKind kind) {
         HKSL_ERROR(std::format("Expected {} on line {}:{}", token, span.line, span.col));
     }
 }
-std::vector<std::unique_ptr<Statement>> Parser::statements() {
+std::vector<std::unique_ptr<Statement>> Parser::program() {
     std::vector<std::unique_ptr<Statement>> statements;
 
     while(!is_eof()) {
@@ -68,13 +69,111 @@ std::vector<std::unique_ptr<Statement>> Parser::statements() {
     return statements;
 }
 std::unique_ptr<Statement> Parser::statement() {
+    if(matches(TokenKind::KeywordFn)) {
+        return function();
+    } else if(matches(TokenKind::LeftCurly)) {
+        return block();
+    } else {
+        return expr_statement();
+    }
+}
+std::unique_ptr<Statement> Parser::expr_statement() {
     auto inner = expr();
     expect(TokenKind::Semicolon);
 
     return std::make_unique<ExprStatement>(std::move(inner));
 }
+std::unique_ptr<BlockStatement> Parser::block() {
+    expect(TokenKind::LeftCurly);
+    std::vector<std::unique_ptr<Statement>> inner_statements;
+
+    while(!consume(TokenKind::RightCurly)) {
+        inner_statements.push_back(statement());
+    }
+
+    return std::make_unique<BlockStatement>(std::move(inner_statements));
+}
+std::unique_ptr<Statement> Parser::function() {
+    expect(TokenKind::KeywordFn);
+    
+    const auto& maybe_name = current();
+    expect(TokenKind::Identifier);
+    const auto& name = maybe_name.unwrap_identifier();
+
+    FunctionArgs args = function_args();
+
+    std::optional<Identifier> return_type = std::nullopt;
+
+    if(consume(TokenKind::RightArrow)) {
+        *return_type = current().unwrap_identifier(); 
+        expect(TokenKind::Identifier);
+    }
+    
+    std::unique_ptr<BlockStatement> block_stmt = block();
+
+    return std::make_unique<Function>(name, std::move(args), std::move(block_stmt), return_type);
+}
+FunctionArgs Parser::function_args() {
+    FunctionArgs args;
+    expect(TokenKind::LeftRound);
+
+    while(true) {
+        const auto& maybe_name= current();
+        if(consume(TokenKind::Identifier)) {
+            const auto& name = maybe_name.unwrap_identifier();
+            expect(TokenKind::Colon);
+
+            const auto& maybe_type = current();
+            expect(TokenKind::Identifier);
+            const auto& type = maybe_type.unwrap_identifier();
+
+            args.push_back(FunctionArg(name, type));
+
+            if(!consume(TokenKind::Comma)) {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
+    expect(TokenKind::RightRound);
+
+    return args;
+}
 std::unique_ptr<Expr> Parser::expr() {
-    return equality();
+    return let();
+}
+
+std::unique_ptr<Expr> Parser::let() {
+    if(consume(TokenKind::KeywordLet)) {
+        auto variable_expr = variable();
+        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), nullptr);
+
+        if(consume(TokenKind::Equals)) {
+            auto rhs = expr();
+            let_expr->rhs = std::move(rhs);
+        }
+
+        return let_expr;
+    }
+
+    return assignment();
+}
+std::unique_ptr<Expr> Parser::assignment() {
+    std::unique_ptr<Expr> lhs = equality();
+
+    const Token& last = current();
+    if(consume(TokenKind::Equals)) {
+        if(!expr_kind_is_place(lhs->kind())) {
+            HKSL_ERROR(std::format("Target of assignment can only be a variable: {}:{}", last.span.line, last.span.col));
+        }
+        std::unique_ptr<Expr> rhs = assignment();
+        
+        lhs = std::make_unique<AssignmentExpr>(std::move(lhs), std::move(rhs));
+    }
+
+    return lhs;
 }
 std::unique_ptr<Expr> Parser::equality() {
     auto left = term();
@@ -151,18 +250,26 @@ std::unique_ptr<Expr> Parser::primary() {
         return inner;
     }
     const Token& last = current();
-    if(consume({TokenKind::Number, TokenKind::Identifier})) {
-        switch(last.kind) {
-            case TokenKind::Number:
-                return std::make_unique<NumberConstant>(last.unwrap_number_literal());
-            case TokenKind::Identifier:
-                return std::make_unique<Variable>(last.unwrap_identifier());
-            default:
-                HKSL_UNREACHABLE();
-        }
+    if(consume(TokenKind::Number)) {
+        return std::make_unique<NumberConstant>(last.unwrap_number_literal());
     }
+
+    return place();
+}
+
+std::unique_ptr<Expr> Parser::place() {
+    if(matches(TokenKind::Identifier)) {
+        return variable();
+    }
+
+    //TODO: CallExpr
 
     unexpected_token();
     return nullptr;
+}
+std::unique_ptr<Variable> Parser::variable() {
+    const Token& last = current();
+    expect(TokenKind::Identifier);
+    return std::make_unique<Variable>(last.unwrap_identifier());
 }
 }

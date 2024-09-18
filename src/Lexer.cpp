@@ -22,6 +22,8 @@ std::string token_kind_to_debug_string(TokenKind token) {
     return "Dot";
   case TokenKind::Semicolon:
     return "Semicolon";
+  case TokenKind::Colon:
+    return "Colon";
   case TokenKind::Equals:
     return "Equals";
   case TokenKind::LeftRound:
@@ -79,6 +81,8 @@ std::string token_kind_to_string(TokenKind token) {
     return ",";
   case TokenKind::Dot:
     return ".";
+  case TokenKind::Colon:
+    return ":";
   case TokenKind::Semicolon:
     return ";";
   case TokenKind::Equals:
@@ -256,7 +260,9 @@ std::optional<TokenKind> Lexer::is_keyword(const std::string& identifier) {
         ret = TokenKind::KeywordFn;
     } else if(identifier == "if") {
         ret = TokenKind::KeywordIf;
-    } 
+    } else if(identifier == "let") {
+        ret = TokenKind::KeywordLet;
+    }
 
     return ret;
 }
@@ -318,7 +324,9 @@ Token Lexer::token() {
         token.kind = TokenKind::Dot;
     } else if(consume(';')) {
         token.kind = TokenKind::Semicolon;
-    } else if(consume('=')) {
+    } else if(consume(':')) {
+        token.kind = TokenKind::Colon;
+    }else if(consume('=')) {
         token.kind = TokenKind::Equals;
     } else if (consume('(')) {
         token.kind = TokenKind::LeftRound;

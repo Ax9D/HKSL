@@ -22,7 +22,7 @@ int main(int argc, const char** argv) {
     std::vector<HKSL::Token> tokens = lexer.collect_tokens();
     HKSL::Parser parser(tokens.data());
 
-    auto statements = parser.statements();
+    auto statements = parser.program();
 
     HKSL::Printer printer;
     for(auto& statement: statements) {

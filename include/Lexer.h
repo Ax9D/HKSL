@@ -20,6 +20,7 @@ enum class TokenKind {
     Star,
     Comma,
     Dot,
+    Colon,
     Semicolon,
     Equals,
     LeftSquare,

@@ -2,6 +2,9 @@
 #include <Printer.h>
 #include <format>
 namespace HKSL {
+bool expr_kind_is_place(ExprKind kind) {
+    return kind == ExprKind::Variable || kind == ExprKind::CallExpr;
+}
 
 std::string unary_op_to_string(UnaryOp op) {
     switch(op) {
@@ -75,6 +78,36 @@ void Variable::print(Printer& printer) const {
     printer.print(std::format("Variable({})", name.name));
 }
 
+AssignmentExpr::AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs) {
+    this->lhs = std::move(lhs);
+    this->rhs = std::move(rhs);
+}
+
+ExprKind AssignmentExpr::kind() const {
+    return ExprKind::AssignmentExpr;
+}
+
+void AssignmentExpr::print(Printer &printer) const {
+    NodePrinter node("AssignmentExpr", printer);
+    node.field("lhs", lhs.get());
+    node.field("lhs", rhs.get());
+}
+LetExpr::LetExpr(std::unique_ptr<Expr> variable, std::unique_ptr<Expr> rhs) {
+    this->variable = std::move(variable);
+    this->rhs = std::move(rhs);
+}
+ExprKind LetExpr::kind() const {
+    return ExprKind::LetExpr;
+}
+void LetExpr::print(Printer& printer) const {
+    NodePrinter node("LetExpr", printer);
+    node.field("variable", variable.get());
+    if(rhs) {
+        node.field("rhs", rhs.get());
+    } else {
+        node.field("rhs", "None");
+    }
+}
 
 ExprStatement::ExprStatement(std::unique_ptr<Expr> expr) {
     this->expr = std::move(expr);
@@ -88,4 +121,60 @@ void ExprStatement::print(Printer& printer) const {
     NodePrinter node("ExprStatement", printer);
     node.field("expr", expr.get());
 }
+BlockStatement::BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) {
+    this->statements = std::move(statements);
+}
+
+StatementKind BlockStatement::kind() const {
+    return StatementKind::Block;
+}
+
+void BlockStatement::print(Printer& printer) const {
+    NodePrinter node("BlockStatement", printer);
+    node.name("expr");
+    {
+        ArrayPrinter array(statements.size(), printer);
+        for(size_t i = 0; i < statements.size(); i++) {
+            array.print_item(statements[i].get());
+        }
+    }
+}
+FunctionArg::FunctionArg(const Identifier& name, const Identifier& type) {
+    this->name = name;
+    this->type = type;
+}
+void FunctionArg::print(Printer& printer) const {
+    printer.print(std::format("{}: {}", name.name, type.name));
+}
+Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, std::optional<Identifier>& return_type) {
+    this->name = name;
+    this->args = args;
+    this->block = std::move(block);
+    this->return_type = return_type;
+}
+StatementKind Function::kind() const {
+    return StatementKind::Function;
+}
+void Function::print(Printer& printer) const {
+    NodePrinter node("Function", printer);
+    node.field("name", name.name);
+    node.name("args");
+
+    {
+        ArrayPrinter array(args.size(), printer);
+        for(size_t i = 0; i < args.size(); i++) {
+            array.print_item(&args[i]);
+        }
+    }
+
+    node.name("block");
+    {
+        ArrayPrinter array(block->statements.size(), printer);
+        for(size_t i = 0; i < block->statements.size(); i++) {
+            array.print_item(block->statements[i].get());
+        }
+    }
+
+}
+
 }
