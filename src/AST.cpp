@@ -92,8 +92,9 @@ void AssignmentExpr::print(Printer &printer) const {
     node.field("lhs", lhs.get());
     node.field("lhs", rhs.get());
 }
-LetExpr::LetExpr(std::unique_ptr<Expr> variable, std::unique_ptr<Expr> rhs) {
+LetExpr::LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::unique_ptr<Expr> rhs) {
     this->variable = std::move(variable);
+    this->type = type;
     this->rhs = std::move(rhs);
 }
 ExprKind LetExpr::kind() const {
@@ -102,10 +103,13 @@ ExprKind LetExpr::kind() const {
 void LetExpr::print(Printer& printer) const {
     NodePrinter node("LetExpr", printer);
     node.field("variable", variable.get());
+
+    if(type) {
+        node.field("type", type->name);
+    }
+
     if(rhs) {
         node.field("rhs", rhs.get());
-    } else {
-        node.field("rhs", "None");
     }
 }
 

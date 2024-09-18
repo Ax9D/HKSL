@@ -149,8 +149,15 @@ std::unique_ptr<Expr> Parser::expr() {
 std::unique_ptr<Expr> Parser::let() {
     if(consume(TokenKind::KeywordLet)) {
         auto variable_expr = variable();
-        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), nullptr);
+        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), std::nullopt, nullptr);
 
+        if(consume(TokenKind::Colon)) {
+            // Is explictly typed
+            const auto& maybe_type = current();
+            expect(TokenKind::Identifier);
+            const auto& type = maybe_type.unwrap_identifier();
+            let_expr->type = type;
+        }
         if(consume(TokenKind::Equals)) {
             auto rhs = expr();
             let_expr->rhs = std::move(rhs);

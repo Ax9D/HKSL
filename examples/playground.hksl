@@ -11,7 +11,8 @@ fn foo() {}
 
 fn bar(x: u32) {
     let y = 2;
-    let z = y + 3;
+    let z: i32 = y + 3;
+    let w: bool;
 }
 
 fn mul(x: u32, y: u32) -> u32 {
