@@ -101,7 +101,7 @@ std::unique_ptr<Expr> Parser::term() {
     return left;
 }
 std::unique_ptr<Expr> Parser::factor() {
-    auto left = primary();
+    auto left = unary();
 
     TokenKind op_token;
     while(consume({TokenKind::Star, TokenKind::Slash}, &op_token)) {
@@ -117,12 +117,20 @@ std::unique_ptr<Expr> Parser::factor() {
                 HKSL_UNREACHABLE();
         }
 
-        auto right = primary();
+        auto right = unary();
 
         left = std::make_unique<BinExpr>(op, std::move(left), std::move(right));
     }
 
     return left;
+}
+std::unique_ptr<Expr> Parser::unary() {
+    if(consume(TokenKind::Minus)) {
+        std::unique_ptr<Expr> inner_expr = unary();
+        return std::make_unique<UnaryExpr>(UnaryOp::Negate, std::move(inner_expr));
+    } 
+
+    return primary();
 }
 std::unique_ptr<Expr> Parser::primary() {
     if(consume(TokenKind::LeftRound)) {

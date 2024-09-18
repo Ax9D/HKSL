@@ -5,6 +5,7 @@
 namespace HKSL {
 enum class ExprKind {
     BinExpr,
+    UnaryExpr,
     NumberConstant,
     Variable,
     CallExpr,
@@ -18,12 +19,30 @@ struct Expr {
     virtual std::string to_string() = 0;
 };
 
+enum class UnaryOp {
+    Negate
+};
+
+std::string unary_op_to_string(UnaryOp op);
+
 enum class BinOp {
     Add,
     Subtract,
     Multiply,
     Divide,
     Equals,
+};
+
+std::string bin_op_to_string(BinOp op);
+
+struct UnaryExpr: public Expr {
+    UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr);
+
+    UnaryOp op;
+    std::unique_ptr<Expr> expr;
+
+    ExprKind kind() override;
+    std::string to_string() override;
 };
 
 struct BinExpr: public Expr {
