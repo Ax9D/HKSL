@@ -15,14 +15,18 @@ struct CLIArgs {
 int main(int argc, const char** argv) {
     CLIArgs args;
     args.parse(argc, argv);
-
     std::string code = HKSL::read_to_string(args.src_path);
     std::cout << code << std::endl;
 
     HKSL::Lexer lexer(code.c_str());
     std::vector<HKSL::Token> tokens = lexer.collect_tokens();
-    
     HKSL::Parser parser(tokens.data());
 
-    parser.statement();
+    auto statements = parser.statements();
+
+    HKSL::Printer printer;
+    for(auto& statement: statements) {
+        statement->print(printer);
+        printer.println();
+    }
 }

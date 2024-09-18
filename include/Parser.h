@@ -8,6 +8,7 @@ namespace HKSL {
 class Parser {
     public:
         Parser(const Token* tokens);
+        std::vector<std::unique_ptr<Statement>> statements();
         std::unique_ptr<Statement> statement();
         std::unique_ptr<Expr> expr();
         std::unique_ptr<Expr> equality();
@@ -19,6 +20,7 @@ class Parser {
         const Token& current() const;
         const Token& next() const;
         void advance();
+        bool is_eof();
         bool matches(TokenKind kind) const;
         bool consume(std::initializer_list<TokenKind> kinds, TokenKind* out_consumed = nullptr);
         bool consume(TokenKind kind, TokenKind* out_consumed = nullptr);  

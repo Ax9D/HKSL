@@ -11,8 +11,11 @@ const Token& Parser::current() const {
 const Token& Parser::next() const {
     return *(remaining + 1);
 }
+bool Parser::is_eof() {
+    return current().kind == TokenKind::Eof;
+}
 void Parser::advance() {
-    if(current().kind == TokenKind::Eof) {
+    if(is_eof()) {
         HKSL_ERROR("Reached EOF while parsing");
     }
 
@@ -54,6 +57,15 @@ void Parser::expect(TokenKind kind) {
         std::string token = token_kind_to_string(kind);
         HKSL_ERROR(std::format("Expected {} on line {}:{}", token, span.line, span.col));
     }
+}
+std::vector<std::unique_ptr<Statement>> Parser::statements() {
+    std::vector<std::unique_ptr<Statement>> statements;
+
+    while(!is_eof()) {
+        statements.push_back(statement());
+    }
+
+    return statements;
 }
 std::unique_ptr<Statement> Parser::statement() {
     auto inner = expr();
