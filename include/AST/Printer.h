@@ -1,18 +1,18 @@
 #pragma once 
-#include <AST.h>
+#include <string>
 
 namespace HKSL {
 
-class Printer;
+class ASTPrinter;
 
-struct Print {
-    ~Print() = default;
-    virtual void print(Printer& printer) const = 0;
+struct ASTPrint {
+    ~ASTPrint() = default;
+    virtual void print(ASTPrinter& printer) const = 0;
 };
 
-class Printer {
+class ASTPrinter {
     public:
-        Printer();
+        ASTPrinter();
         void print(const std::string& text);
         void println(const std::string& text);
         void println();
@@ -25,24 +25,24 @@ class Printer {
 };
 class NodePrinter {
     public:
-        NodePrinter(const std::string& name, Printer& printer);
+        NodePrinter(const std::string& name, ASTPrinter& printer);
         ~NodePrinter();
         NodePrinter& field(const std::string& name, const std::string& value);
-        NodePrinter& field(const std::string& name, const Print* node);
+        NodePrinter& field(const std::string& name, const ASTPrint* node);
         NodePrinter& name(const std::string& name);
-        NodePrinter& value(const Print* node);
+        NodePrinter& value(const ASTPrint* node);
     private:
-        Printer& printer;
+        ASTPrinter& printer;
 };
 
 
 class ArrayPrinter {
     public:
-        ArrayPrinter(size_t n, Printer& printer);
+        ArrayPrinter(size_t n, ASTPrinter& printer);
         ~ArrayPrinter();
-        void print_item(const Print* item);
+        void print_item(const ASTPrint* item);
     private:
-        Printer& printer;
+        ASTPrinter& printer;
         size_t i;
         size_t n;
 };

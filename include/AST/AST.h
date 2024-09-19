@@ -1,11 +1,10 @@
 #pragma once
 #include <string>
-#include <Lexer.h>
-#include <Printer.h>
+#include <Parse/Lexer.h>
+#include <AST/Printer.h>
 
 namespace HKSL {
-
-struct ASTNode: Print {
+struct ASTNode: ASTPrint {
     virtual ~ASTNode() = default;
 };
 
@@ -49,14 +48,14 @@ struct UnaryExpr: public Expr {
     std::unique_ptr<Expr> expr;
 
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 struct BinExpr: public Expr {
     BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right);
     
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 
     BinOp op;
     std::unique_ptr<Expr> left;
@@ -66,7 +65,7 @@ struct BinExpr: public Expr {
 struct NumberConstant: public Expr {
     NumberConstant(NumberLiteral literal);
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 
     NumberLiteral number_literal;
 };
@@ -74,7 +73,7 @@ struct NumberConstant: public Expr {
 struct Variable: public Expr {
     Variable(const Identifier& name);
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 
     Identifier name;
 };
@@ -83,7 +82,7 @@ using CallArgs = std::vector<std::unique_ptr<Expr>>;
 struct CallExpr: public Expr {
     CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>& args);
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 
     Identifier fn_name;
     std::vector<std::unique_ptr<Expr>> args;
@@ -96,7 +95,7 @@ struct AssignmentExpr: public Expr {
     std::unique_ptr<Expr> rhs;
 
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 struct LetExpr: public Expr {
@@ -107,7 +106,7 @@ struct LetExpr: public Expr {
     std::optional<std::unique_ptr<Expr>> rhs;
 
     ExprKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 enum class StatementKind {
@@ -131,7 +130,7 @@ struct ExprStatement: public Statement {
     std::unique_ptr<Expr> expr;
     
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 struct IfStatement: public Statement {
@@ -139,29 +138,29 @@ struct IfStatement: public Statement {
     std::unique_ptr<Statement> else_part = nullptr;
 
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 struct ElseStatement: public Statement {
     std::unique_ptr<Statement> statement;
 
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 struct BlockStatement: public Statement {
     BlockStatement(std::vector<std::unique_ptr<Statement>>& statements);
     std::vector<std::unique_ptr<Statement>> statements;
 
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
-struct FunctionArg: Print {
+struct FunctionArg: ASTPrint {
     Identifier name;
     Identifier type;
 
     FunctionArg(const Identifier& name, const Identifier& type);
 
-    void print(Printer& printer) const override; 
+    void print(ASTPrinter& printer) const override; 
 };
 using FunctionArgs = std::vector<FunctionArg>;
 struct Function: public Statement {
@@ -172,14 +171,14 @@ struct Function: public Statement {
     std::optional<Identifier> return_type;
 
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 };
 
 struct ReturnStatement: public Statement {
     ReturnStatement(std::optional<std::unique_ptr<Expr>> value);
     
     StatementKind kind() const override;
-    void print(Printer& printer) const override;
+    void print(ASTPrinter& printer) const override;
 
     std::optional<std::unique_ptr<Expr>> value;
 };
@@ -188,7 +187,7 @@ struct ReturnStatement: public Statement {
 struct AST {
     public:
         AST();
-        friend class Printer;
+        friend class ASTPrinter;
         friend class Visitor;
     private:
         std::vector<std::unique_ptr<Statement>> statements;

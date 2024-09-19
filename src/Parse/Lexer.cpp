@@ -1,5 +1,5 @@
 #include "Util.h"
-#include <Lexer.h>
+#include <Parse/Lexer.h>
 #include <format>
 
 namespace HKSL {

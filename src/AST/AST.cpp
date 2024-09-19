@@ -1,5 +1,4 @@
-#include <AST.h>
-#include <Printer.h>
+#include <AST/AST.h>
 #include <format>
 namespace HKSL {
 bool expr_kind_is_place(ExprKind kind) {
@@ -22,7 +21,7 @@ ExprKind UnaryExpr::kind() const {
     return ExprKind::UnaryExpr;
 }
 
-void UnaryExpr::print(Printer& printer) const {
+void UnaryExpr::print(ASTPrinter& printer) const {
     NodePrinter node("UnaryExpr", printer);
     node.field("op", unary_op_to_string(op));
     node.field("expr", expr.get());
@@ -49,7 +48,7 @@ BinExpr::BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> rig
 ExprKind BinExpr::kind() const {
     return ExprKind::BinExpr;
 }
-void BinExpr::print(Printer& printer) const {
+void BinExpr::print(ASTPrinter& printer) const {
     NodePrinter node("BinExpr", printer);
     node.field("op", bin_op_to_string(op));
     node.field("left", left.get());
@@ -63,7 +62,7 @@ ExprKind NumberConstant::kind() const {
     return ExprKind::NumberConstant;
 }
 
-void NumberConstant::print(Printer& printer) const {
+void NumberConstant::print(ASTPrinter& printer) const {
     printer.print(std::format("NumberConstant({})", number_literal.value));
 }
 
@@ -74,7 +73,7 @@ ExprKind Variable::kind() const {
     return ExprKind::Variable;
 }
 
-void Variable::print(Printer& printer) const {
+void Variable::print(ASTPrinter& printer) const {
     printer.print(std::format("Variable({})", name.name));
 }
 CallExpr::CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>& args) {
@@ -84,7 +83,7 @@ CallExpr::CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>
 ExprKind CallExpr::kind() const {
     return ExprKind::CallExpr;
 }
-void CallExpr::print(Printer& printer) const {
+void CallExpr::print(ASTPrinter& printer) const {
     NodePrinter node("CallExpr", printer);
     node.field("fn_name", fn_name.name);
 
@@ -106,7 +105,7 @@ ExprKind AssignmentExpr::kind() const {
     return ExprKind::AssignmentExpr;
 }
 
-void AssignmentExpr::print(Printer &printer) const {
+void AssignmentExpr::print(ASTPrinter &printer) const {
     NodePrinter node("AssignmentExpr", printer);
     node.field("lhs", lhs.get());
     node.field("lhs", rhs.get());
@@ -119,7 +118,7 @@ LetExpr::LetExpr(std::unique_ptr<Variable> variable, const std::optional<Identif
 ExprKind LetExpr::kind() const {
     return ExprKind::LetExpr;
 }
-void LetExpr::print(Printer& printer) const {
+void LetExpr::print(ASTPrinter& printer) const {
     NodePrinter node("LetExpr", printer);
     node.field("variable", variable.get());
 
@@ -140,7 +139,7 @@ StatementKind ExprStatement::kind() const {
     return StatementKind::Expr;
 }
 
-void ExprStatement::print(Printer& printer) const {
+void ExprStatement::print(ASTPrinter& printer) const {
     NodePrinter node("ExprStatement", printer);
     node.field("expr", expr.get());
 }
@@ -152,7 +151,7 @@ StatementKind BlockStatement::kind() const {
     return StatementKind::Block;
 }
 
-void BlockStatement::print(Printer& printer) const {
+void BlockStatement::print(ASTPrinter& printer) const {
     NodePrinter node("BlockStatement", printer);
     node.name("expr");
     {
@@ -166,7 +165,7 @@ FunctionArg::FunctionArg(const Identifier& name, const Identifier& type) {
     this->name = name;
     this->type = type;
 }
-void FunctionArg::print(Printer& printer) const {
+void FunctionArg::print(ASTPrinter& printer) const {
     printer.print(std::format("{}: {}", name.name, type.name));
 }
 Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type) {
@@ -178,7 +177,7 @@ Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<
 StatementKind Function::kind() const {
     return StatementKind::Function;
 }
-void Function::print(Printer& printer) const {
+void Function::print(ASTPrinter& printer) const {
     NodePrinter node("Function", printer);
     node.field("name", name.name);
     node.name("args");
@@ -210,7 +209,7 @@ ReturnStatement::ReturnStatement(std::optional<std::unique_ptr<Expr>> value) {
 StatementKind ReturnStatement::kind() const {
     return StatementKind::Return;
 }
-void ReturnStatement::print(Printer& printer) const {
+void ReturnStatement::print(ASTPrinter& printer) const {
     if(!value) {
         printer.println("ReturnStatement");
     } else {

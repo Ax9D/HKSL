@@ -1,44 +1,44 @@
-#include <AST.h>
-#include <Printer.h>
+#include <AST/Printer.h>
 #include <format>
 #include <cassert>
+#include <iostream>
 
 namespace HKSL {
-Printer::Printer() {
+ASTPrinter::ASTPrinter() {
     indent = 0;
 }
-void Printer::increase_depth() {
+void ASTPrinter::increase_depth() {
     indent++;
 }
-void Printer::decrease_depth() {
+void ASTPrinter::decrease_depth() {
     indent--;
 }
-void Printer::print_with_indent(const std::string& text) {
+void ASTPrinter::print_with_indent(const std::string& text) {
     std::string indent_text(indent, '\t');
 
     print(indent_text);
     print(text);
 }
-void Printer::println_with_indent(const std::string& text) {
+void ASTPrinter::println_with_indent(const std::string& text) {
     std::string indent_text(indent, '\t');
 
     print(indent_text);
     println(text);
 }
-void Printer::print(const std::string& text) {
+void ASTPrinter::print(const std::string& text) {
     std::cout << text;
 }
-void Printer::println(const std::string& text) {
+void ASTPrinter::println(const std::string& text) {
     print(text);
 
     std::cout << std::endl;
 }
-void Printer::println() {
+void ASTPrinter::println() {
 
     std::cout << std::endl;
 }
 
-NodePrinter::NodePrinter(const std::string& name, Printer& print): printer(print) {
+NodePrinter::NodePrinter(const std::string& name, ASTPrinter& print): printer(print) {
     printer.println(std::format("{} {{", name));
     printer.increase_depth();
 }
@@ -51,7 +51,7 @@ NodePrinter& NodePrinter::name(const std::string& name) {
 
     return *this;
 }
-NodePrinter& NodePrinter::value(const Print* node) {
+NodePrinter& NodePrinter::value(const ASTPrint* node) {
     node->print(printer);
     printer.println();
 
@@ -62,14 +62,14 @@ NodePrinter& NodePrinter::field(const std::string &name, const std::string &valu
 
     return *this;
 }
-NodePrinter& NodePrinter::field(const std::string &name, const Print* value) {
+NodePrinter& NodePrinter::field(const std::string &name, const ASTPrint* value) {
     printer.print_with_indent(std::format("{}: ", name));
     value->print(printer);
     printer.println();
     return *this;
 }
 
-ArrayPrinter::ArrayPrinter(size_t n, Printer& printer_): printer(printer_)  {
+ArrayPrinter::ArrayPrinter(size_t n, ASTPrinter& printer_): printer(printer_)  {
     this->n = n;
     this->i = 0;
     printer.println("[");
@@ -79,7 +79,7 @@ ArrayPrinter::~ArrayPrinter() {
     printer.decrease_depth();
     printer.println_with_indent("]");
 }
-void ArrayPrinter::print_item(const Print* item) {
+void ArrayPrinter::print_item(const ASTPrint* item) {
     printer.print_with_indent("");
     item->print(printer);
     

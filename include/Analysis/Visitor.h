@@ -1,6 +1,6 @@
 #pragma once
 #include "Util.h"
-#include <AST.h>
+#include <AST/AST.h>
 
 namespace HKSL {
 class Visitor {

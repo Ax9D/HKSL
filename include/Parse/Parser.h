@@ -1,7 +1,7 @@
 #pragma once
 
-#include <AST.h>
-#include <Lexer.h>
+#include <AST/AST.h>
+#include <Parse/Lexer.h>
 
 namespace HKSL {
 

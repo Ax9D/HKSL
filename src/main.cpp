@@ -1,6 +1,6 @@
 #include "FSUtil.h"
-#include <Lexer.h>
-#include <Parser.h>
+#include <Parse/Lexer.h>
+#include <Parse/Parser.h>
 
 struct CLIArgs {
     const char* src_path;
@@ -24,7 +24,7 @@ int main(int argc, const char** argv) {
 
     auto statements = parser.program();
 
-    HKSL::Printer printer;
+    HKSL::ASTPrinter printer;
     for(auto& statement: statements) {
         statement->print(printer);
         printer.println();
