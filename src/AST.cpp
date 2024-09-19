@@ -111,7 +111,7 @@ void AssignmentExpr::print(Printer &printer) const {
     node.field("lhs", lhs.get());
     node.field("lhs", rhs.get());
 }
-LetExpr::LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs) {
+LetExpr::LetExpr(std::unique_ptr<Variable> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs) {
     this->variable = std::move(variable);
     this->type = type;
     this->rhs = std::move(rhs);

@@ -100,9 +100,9 @@ struct AssignmentExpr: public Expr {
 };
 
 struct LetExpr: public Expr {
-    LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs);
+    LetExpr(std::unique_ptr<Variable> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs);
 
-    std::unique_ptr<Expr> variable;
+    std::unique_ptr<Variable> variable;
     std::optional<Identifier> type;
     std::optional<std::unique_ptr<Expr>> rhs;
 
