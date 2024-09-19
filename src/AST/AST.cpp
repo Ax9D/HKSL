@@ -218,4 +218,14 @@ void ReturnStatement::print(ASTPrinter& printer) const {
         node.field("value", value->get());
     }
 }
+AST::AST(std::vector<std::unique_ptr<Statement>>& statements) {
+    this->statements = std::move(statements);
+}
+void AST::print(ASTPrinter &printer) const {
+    ArrayPrinter array(statements.size(), printer);
+
+    for(size_t i = 0; i < statements.size(); i++) {
+        array.print_item(statements[i].get());
+    }
+}
 }

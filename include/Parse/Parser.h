@@ -8,7 +8,7 @@ namespace HKSL {
 class Parser {
     public:
         Parser(const Token* tokens);
-        std::vector<std::unique_ptr<Statement>> program();
+        AST program();
         std::unique_ptr<Statement> statement();
         std::unique_ptr<Statement> expr_statement();
         std::unique_ptr<BlockStatement> block();

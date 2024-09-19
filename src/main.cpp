@@ -22,11 +22,8 @@ int main(int argc, const char** argv) {
     std::vector<HKSL::Token> tokens = lexer.collect_tokens();
     HKSL::Parser parser(tokens.data());
 
-    auto statements = parser.program();
+    auto ast = parser.program();
 
     HKSL::ASTPrinter printer;
-    for(auto& statement: statements) {
-        statement->print(printer);
-        printer.println();
-    }
+    ast.print(printer);
 }

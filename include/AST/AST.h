@@ -184,11 +184,12 @@ struct ReturnStatement: public Statement {
 };
 
 
-struct AST {
+struct AST: ASTNode {
     public:
-        AST();
+        AST(std::vector<std::unique_ptr<Statement>>& statements);
         friend class ASTPrinter;
         friend class Visitor;
+        void print(ASTPrinter& printer) const override;
     private:
         std::vector<std::unique_ptr<Statement>> statements;
 };
