@@ -40,6 +40,7 @@ enum class TokenKind {
     Number,
     Identifier,
     KeywordIf,
+    KeywordElse,
     KeywordFn,
     KeywordLet,
     KeywordReturn,

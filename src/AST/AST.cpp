@@ -153,7 +153,7 @@ StatementKind BlockStatement::kind() const {
 
 void BlockStatement::print(ASTPrinter& printer) const {
     NodePrinter node("BlockStatement", printer);
-    node.name("expr");
+    node.name("statements");
     {
         ArrayPrinter array(statements.size(), printer);
         for(size_t i = 0; i < statements.size(); i++) {
@@ -217,6 +217,34 @@ void ReturnStatement::print(ASTPrinter& printer) const {
 
         node.field("value", value->get());
     }
+}
+
+IfStatement::IfStatement(std::unique_ptr<Expr> condition, std::unique_ptr<BlockStatement> block, std::optional<std::unique_ptr<ElseStatement>> else_stmt) {
+    this->condition = std::move(condition);
+    this->then_block = std::move(block);
+    this->else_stmt = std::move(else_stmt);
+}
+StatementKind IfStatement::kind() const {
+    return StatementKind::If;
+}
+void IfStatement::print(ASTPrinter &printer) const {
+    NodePrinter node("IfStatement", printer);
+    node.field("condition", condition.get());
+    node.field("condition", then_block.get());
+
+    if(else_stmt) {
+        node.field("else", else_stmt->get());
+    }
+}
+ElseStatement::ElseStatement(std::unique_ptr<Statement> statement) {
+    this->statement = std::move(statement);
+}
+StatementKind ElseStatement::kind() const {
+    return StatementKind::Else;
+}
+void ElseStatement::print(ASTPrinter& printer) const {
+    NodePrinter node("ElseStatement", printer);
+    node.field("statement", statement.get());
 }
 AST::AST(std::vector<std::unique_ptr<Statement>>& statements) {
     this->statements = std::move(statements);

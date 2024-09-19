@@ -132,21 +132,6 @@ struct ExprStatement: public Statement {
     StatementKind kind() const override;
     void print(ASTPrinter& printer) const override;
 };
-
-struct IfStatement: public Statement {
-    std::unique_ptr<Expr> condition;
-    std::unique_ptr<Statement> else_part = nullptr;
-
-    StatementKind kind() const override;
-    void print(ASTPrinter& printer) const override;
-};
-
-struct ElseStatement: public Statement {
-    std::unique_ptr<Statement> statement;
-
-    StatementKind kind() const override;
-    void print(ASTPrinter& printer) const override;
-};
 struct BlockStatement: public Statement {
     BlockStatement(std::vector<std::unique_ptr<Statement>>& statements);
     std::vector<std::unique_ptr<Statement>> statements;
@@ -154,6 +139,27 @@ struct BlockStatement: public Statement {
     StatementKind kind() const override;
     void print(ASTPrinter& printer) const override;
 };
+
+struct ElseStatement;
+
+struct IfStatement: public Statement {
+    IfStatement(std::unique_ptr<Expr> condtion, std::unique_ptr<BlockStatement> block, std::optional<std::unique_ptr<ElseStatement>> else_stmt);
+    StatementKind kind() const override;
+    void print(ASTPrinter& printer) const override;
+
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<BlockStatement> then_block;
+    std::optional<std::unique_ptr<ElseStatement>> else_stmt;
+};
+
+struct ElseStatement: public Statement {
+    ElseStatement(std::unique_ptr<Statement> statement);
+    StatementKind kind() const override;
+    void print(ASTPrinter& printer) const override;
+
+    std::unique_ptr<Statement> statement;
+};
+
 struct FunctionArg: ASTPrint {
     Identifier name;
     Identifier type;

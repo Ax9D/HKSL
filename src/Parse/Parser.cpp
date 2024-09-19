@@ -78,6 +78,8 @@ std::unique_ptr<Statement> Parser::statement() {
         return block();
     } else if(matches(TokenKind::KeywordReturn)){
         return return_statement();
+    } else if (matches(TokenKind::KeywordIf)) {
+        return if_statement();
     } else {
         return expr_statement();
     }
@@ -153,6 +155,38 @@ FunctionArgs Parser::function_args() {
     expect(TokenKind::RightRound);
 
     return args;
+}
+std::unique_ptr<Statement> Parser::if_statement() {
+    expect(TokenKind::KeywordIf);
+    auto condition = expr();
+
+    {
+    ASTPrinter printer;
+    condition->print(printer);
+    }
+    auto block_stmt = block();
+    {
+        ASTPrinter printer;
+        block_stmt->print(printer);
+    }
+    std::optional<std::unique_ptr<ElseStatement>> else_stmt = std::nullopt;
+    if(matches(TokenKind::KeywordElse)) {
+        else_stmt = else_statement();
+    }
+
+    return std::make_unique<IfStatement>(std::move(condition), std::move(block_stmt), std::move(else_stmt));
+}
+std::unique_ptr<ElseStatement> Parser::else_statement() {
+    expect(TokenKind::KeywordElse);
+    std::unique_ptr<Statement> statement;
+    if(matches(TokenKind::KeywordIf)) {
+        // else if
+        statement = if_statement();
+    } else {
+        statement = block();
+    }
+
+    return std::make_unique<ElseStatement>(std::move(statement));
 }
 std::unique_ptr<Expr> Parser::expr() {
     return let();

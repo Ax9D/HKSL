@@ -19,5 +19,25 @@ fn mul(x: u32, y: u32) -> u32 {
     z = x * y;
     z = zinga(zinga(1), zinga(), zinga, zinga(1,));
 
+    if x == 2 {
+        print(y);
+    }
+
+    if y + 5 == 3 {
+        bar();
+    } else {
+        q = 2 == 4;
+    }
+
+    if y - -5 == 3 {
+        bar();
+    } else if 2 + 3 == 5 {
+        q = 2 == 4;
+    } else {
+        print(no);
+    }
+
+
+
     return 5;
 }

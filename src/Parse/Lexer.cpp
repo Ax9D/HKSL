@@ -58,6 +58,8 @@ std::string token_kind_to_debug_string(TokenKind token) {
     return "KeywordIf";
   case TokenKind::KeywordFn:
     return "KeywordFn";
+  case TokenKind::KeywordElse:
+    return "KeywordElse";
   case TokenKind::KeywordLet:
     return "KeywordLet";
   case TokenKind::KeywordReturn:
@@ -119,6 +121,8 @@ std::string token_kind_to_string(TokenKind token) {
     return "Identifier";
   case TokenKind::KeywordIf:
     return "if";
+  case TokenKind::KeywordElse:
+    return "else";
   case TokenKind::KeywordFn:
     return "fn";
   case TokenKind::KeywordLet:
@@ -264,6 +268,8 @@ std::optional<TokenKind> Lexer::is_keyword(const std::string& identifier) {
         ret = TokenKind::KeywordFn;
     } else if(identifier == "if") {
         ret = TokenKind::KeywordIf;
+    } else if(identifier == "else") {
+        ret = TokenKind::KeywordElse;
     } else if(identifier == "let") {
         ret = TokenKind::KeywordLet;
     } else if(identifier == "return") {
