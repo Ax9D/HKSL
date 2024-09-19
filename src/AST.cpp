@@ -77,7 +77,26 @@ ExprKind Variable::kind() const {
 void Variable::print(Printer& printer) const {
     printer.print(std::format("Variable({})", name.name));
 }
+CallExpr::CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>& args) {
+    this->fn_name = fn_name;
+    this->args = std::move(args);
+}
+ExprKind CallExpr::kind() const {
+    return ExprKind::CallExpr;
+}
+void CallExpr::print(Printer& printer) const {
+    NodePrinter node("CallExpr", printer);
+    node.field("fn_name", fn_name.name);
 
+    node.name("args");
+
+    {
+        ArrayPrinter array(args.size(), printer);
+        for(size_t i = 0; i < args.size(); i++) {
+            array.print_item(args[i].get());
+        }
+    }
+}
 AssignmentExpr::AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs) {
     this->lhs = std::move(lhs);
     this->rhs = std::move(rhs);
@@ -125,7 +144,7 @@ void ExprStatement::print(Printer& printer) const {
     NodePrinter node("ExprStatement", printer);
     node.field("expr", expr.get());
 }
-BlockStatement::BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements) {
+BlockStatement::BlockStatement(std::vector<std::unique_ptr<Statement>>& statements) {
     this->statements = std::move(statements);
 }
 

@@ -23,7 +23,9 @@ class Parser {
         std::unique_ptr<Expr> unary();
         std::unique_ptr<Expr> primary();
         std::unique_ptr<Expr> place();
+        std::unique_ptr<Expr> call_expr();
         std::unique_ptr<Variable> variable();
+        Identifier identifier();
         Identifier type();
     private:
         const Token& current() const;

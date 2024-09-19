@@ -17,4 +17,7 @@ fn bar(x: u32) {
 
 fn mul(x: u32, y: u32) -> u32 {
     z = x * y;
+    z = zinga(zinga(1), zinga(), zinga, zinga(1,));
+
+    return 5;
 }

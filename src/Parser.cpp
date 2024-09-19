@@ -95,14 +95,12 @@ std::unique_ptr<BlockStatement> Parser::block() {
         inner_statements.push_back(statement());
     }
 
-    return std::make_unique<BlockStatement>(std::move(inner_statements));
+    return std::make_unique<BlockStatement>(inner_statements);
 }
 std::unique_ptr<Statement> Parser::function() {
     expect(TokenKind::KeywordFn);
     
-    const auto& maybe_name = current();
-    expect(TokenKind::Identifier);
-    const auto& name = maybe_name.unwrap_identifier();
+    const auto name = identifier();
 
     FunctionArgs args = function_args();
 
@@ -265,18 +263,41 @@ std::unique_ptr<Expr> Parser::primary() {
 
 std::unique_ptr<Expr> Parser::place() {
     if(matches(TokenKind::Identifier)) {
-        return variable();
+        return call_expr();
     }
-
-    //TODO: CallExpr
 
     unexpected_token();
     return nullptr;
 }
+std::unique_ptr<Expr> Parser::call_expr() {
+    auto name = identifier();
+    if(consume(TokenKind::LeftRound)) {
+
+        CallArgs args;
+        while(true) {
+            if(!consume(TokenKind::RightRound)) {
+                auto arg = expr();
+                args.push_back(std::move(arg));
+                if(!consume(TokenKind::Comma)) {
+                    expect(TokenKind::RightRound);
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return std::make_unique<CallExpr>(name, args);
+    } else {
+        return std::make_unique<Variable>(name);
+    }
+}
 std::unique_ptr<Variable> Parser::variable() {
-    const Token& last = current();
+    return std::make_unique<Variable>(identifier());
+}
+Identifier Parser::identifier() {
+    const auto& maybe_identifier = current();
     expect(TokenKind::Identifier);
-    return std::make_unique<Variable>(last.unwrap_identifier());
+    return maybe_identifier.unwrap_identifier();
 }
 Identifier Parser::type() {
     const auto& maybe_identifier = current();

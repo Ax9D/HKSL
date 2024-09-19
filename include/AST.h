@@ -79,8 +79,11 @@ struct Variable: public Expr {
     Identifier name;
 };
 
+using CallArgs = std::vector<std::unique_ptr<Expr>>;
 struct CallExpr: public Expr {
-    CallExpr(const Identifier& fn_name, const std::vector<std::unique_ptr<Expr>>& args);
+    CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>& args);
+    ExprKind kind() const override;
+    void print(Printer& printer) const override;
 
     Identifier fn_name;
     std::vector<std::unique_ptr<Expr>> args;
@@ -97,11 +100,11 @@ struct AssignmentExpr: public Expr {
 };
 
 struct LetExpr: public Expr {
-    LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::unique_ptr<Expr> rhs);
+    LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs);
 
     std::unique_ptr<Expr> variable;
     std::optional<Identifier> type;
-    std::unique_ptr<Expr> rhs;
+    std::optional<std::unique_ptr<Expr>> rhs;
 
     ExprKind kind() const override;
     void print(Printer& printer) const override;
@@ -145,7 +148,7 @@ struct ElseStatement: public Statement {
     void print(Printer& printer) const override;
 };
 struct BlockStatement: public Statement {
-    BlockStatement(std::vector<std::unique_ptr<Statement>>&& statements);
+    BlockStatement(std::vector<std::unique_ptr<Statement>>& statements);
     std::vector<std::unique_ptr<Statement>> statements;
 
     StatementKind kind() const override;
