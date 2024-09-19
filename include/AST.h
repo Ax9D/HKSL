@@ -185,10 +185,11 @@ struct ReturnStatement: public Statement {
 };
 
 
-class AST {
+struct AST {
     public:
         AST();
-    friend class Parser;
+        friend class Printer;
+        friend class Visitor;
     private:
         std::vector<std::unique_ptr<Statement>> statements;
 };
