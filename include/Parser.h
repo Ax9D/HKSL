@@ -14,6 +14,7 @@ class Parser {
         std::unique_ptr<BlockStatement> block();
         std::unique_ptr<Statement> function();
         std::vector<FunctionArg> function_args();
+        std::unique_ptr<Statement> return_statement();
         std::unique_ptr<Expr> let();
         std::unique_ptr<Expr> assignment();
         std::unique_ptr<Expr> expr();

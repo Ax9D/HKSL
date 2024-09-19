@@ -77,9 +77,23 @@ std::unique_ptr<Statement> Parser::statement() {
         return function();
     } else if(matches(TokenKind::LeftCurly)) {
         return block();
+    } else if(matches(TokenKind::KeywordReturn)){
+        return return_statement();
     } else {
         return expr_statement();
     }
+}
+std::unique_ptr<Statement> Parser::return_statement() {
+    expect(TokenKind::KeywordReturn);
+
+    auto ret = std::make_unique<ReturnStatement>(std::nullopt);
+
+    if(!consume(TokenKind::Semicolon)) {
+        ret->value = expr();
+        expect(TokenKind::Semicolon);
+    }
+
+    return std::move(ret);
 }
 std::unique_ptr<Statement> Parser::expr_statement() {
     auto inner = expr();
@@ -148,7 +162,7 @@ std::unique_ptr<Expr> Parser::expr() {
 std::unique_ptr<Expr> Parser::let() {
     if(consume(TokenKind::KeywordLet)) {
         auto variable_expr = variable();
-        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), std::nullopt, nullptr);
+        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), std::nullopt, std::nullopt);
 
         if(consume(TokenKind::Colon)) {
             // Is explictly typed

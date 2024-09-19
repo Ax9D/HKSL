@@ -60,6 +60,8 @@ std::string token_kind_to_debug_string(TokenKind token) {
     return "KeywordFn";
   case TokenKind::KeywordLet:
     return "KeywordLet";
+  case TokenKind::KeywordReturn:
+    return "KeyworReturn";
   case TokenKind::Eof:
     return "Eof";
   default:
@@ -121,6 +123,8 @@ std::string token_kind_to_string(TokenKind token) {
     return "fn";
   case TokenKind::KeywordLet:
     return "let";
+  case TokenKind::KeywordReturn:
+    return "return";
   case TokenKind::Eof:
     return "Eof";
   default:
@@ -262,6 +266,8 @@ std::optional<TokenKind> Lexer::is_keyword(const std::string& identifier) {
         ret = TokenKind::KeywordIf;
     } else if(identifier == "let") {
         ret = TokenKind::KeywordLet;
+    } else if(identifier == "return") {
+        ret = TokenKind::KeywordReturn;
     }
 
     return ret;

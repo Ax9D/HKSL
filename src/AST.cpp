@@ -111,7 +111,7 @@ void AssignmentExpr::print(Printer &printer) const {
     node.field("lhs", lhs.get());
     node.field("lhs", rhs.get());
 }
-LetExpr::LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::unique_ptr<Expr> rhs) {
+LetExpr::LetExpr(std::unique_ptr<Expr> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs) {
     this->variable = std::move(variable);
     this->type = type;
     this->rhs = std::move(rhs);
@@ -128,7 +128,7 @@ void LetExpr::print(Printer& printer) const {
     }
 
     if(rhs) {
-        node.field("rhs", rhs.get());
+        node.field("rhs", rhs->get());
     }
 }
 
@@ -204,4 +204,19 @@ void Function::print(Printer& printer) const {
 
 }
 
+ReturnStatement::ReturnStatement(std::optional<std::unique_ptr<Expr>> value) {
+    this->value = std::move(value);
+}
+StatementKind ReturnStatement::kind() const {
+    return StatementKind::Return;
+}
+void ReturnStatement::print(Printer& printer) const {
+    if(!value) {
+        printer.println("ReturnStatement");
+    } else {
+        NodePrinter node("ReturnStatement", printer);
+
+        node.field("value", value->get());
+    }
+}
 }

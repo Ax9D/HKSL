@@ -117,6 +117,7 @@ enum class StatementKind {
     Block,
     Function,
     VarDeclartion,
+    Return,
 };
 
 struct Statement: public ASTNode {
@@ -173,6 +174,16 @@ struct Function: public Statement {
     StatementKind kind() const override;
     void print(Printer& printer) const override;
 };
+
+struct ReturnStatement: public Statement {
+    ReturnStatement(std::optional<std::unique_ptr<Expr>> value);
+    
+    StatementKind kind() const override;
+    void print(Printer& printer) const override;
+
+    std::optional<std::unique_ptr<Expr>> value;
+};
+
 
 class AST {
     public:

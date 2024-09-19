@@ -42,6 +42,7 @@ enum class TokenKind {
     KeywordIf,
     KeywordFn,
     KeywordLet,
+    KeywordReturn,
     Eof,
 };
 
