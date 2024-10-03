@@ -1,5 +1,5 @@
 #pragma once
-#include "Util.h"
+#include <Util.h>
 #include <AST/AST.h>
 
 namespace HKSL {
@@ -10,6 +10,7 @@ class Visitor {
         virtual void visit_statement(const Statement* statement);
         virtual void visit_expr_statement(const ExprStatement* expr);
         virtual void visit_if_statement(const IfStatement* if_statement);
+        virtual void visit_else_statement(const ElseStatement* if_statement);
         virtual void visit_block_statement(const BlockStatement* block);
         virtual void visit_function(const Function* function);
         virtual void visit_return_statement(const ReturnStatement* return_statement);

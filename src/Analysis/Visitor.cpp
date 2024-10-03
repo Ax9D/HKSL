@@ -1,3 +1,4 @@
+#include "Util.h"
 #include <Analysis/Visitor.h>
 
 namespace HKSL {
@@ -12,6 +13,8 @@ void Visitor::visit_statement(const Statement* statement) {
             return visit_expr_statement((ExprStatement*) statement);
         case StatementKind::If:
             return visit_if_statement((IfStatement*) statement);
+        case StatementKind::Else:
+            return visit_else_statement((ElseStatement*) statement);
         case StatementKind::Block:
             return visit_block_statement((BlockStatement*) statement);
         case StatementKind::Function:
@@ -26,7 +29,14 @@ void Visitor::visit_expr_statement(const ExprStatement* expr) {
     visit_expr(expr->expr.get());
 }
 void Visitor::visit_if_statement(const IfStatement* if_statement) {
-    HKSL_TODO();
+    visit_expr(if_statement->condition.get());
+    visit_block_statement(if_statement->then_block.get());
+    if(if_statement->else_stmt) {
+        visit_statement(if_statement->else_stmt->get());
+    }
+}
+void Visitor::visit_else_statement(const ElseStatement* else_statement) {
+    visit_statement(else_statement->statement.get());
 }
 void Visitor::visit_block_statement(const BlockStatement* block) {
     for(const auto& statement: block->statements) {
