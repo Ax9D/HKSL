@@ -1,4 +1,5 @@
 #include "FSUtil.h"
+#include "Semantics.h"
 #include <Parse/Lexer.h>
 #include <Parse/Parser.h>
 
@@ -24,6 +25,14 @@ int main(int argc, const char** argv) {
 
     auto ast = parser.program();
 
+    HKSL::SemanticsVisitor visitor;
+    auto result = visitor.run(ast);
     HKSL::ASTPrinter printer;
     ast.print(printer);
+    
+    if(!result.is_success()) {
+        for(auto error: result.errors) {
+            std::cout << error << std::endl;
+        }
+    }
 }

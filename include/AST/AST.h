@@ -115,7 +115,6 @@ enum class StatementKind {
     Else,
     Block,
     Function,
-    VarDeclartion,
     Return,
 };
 
