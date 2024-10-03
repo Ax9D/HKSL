@@ -52,6 +52,7 @@ std::string token_kind_to_string(TokenKind token);
 
 struct Identifier {
     std::string name;
+    Span span;
 };
 struct NumberLiteral {
     double value;

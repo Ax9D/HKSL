@@ -280,6 +280,8 @@ std::optional<TokenKind> Lexer::is_keyword(const std::string& identifier) {
 }
 std::pair<TokenKind, TokenData> Lexer::identifier() {
     std::string name;
+    Span span = current_span();
+    
     name+= current();
     advance();
 
@@ -292,7 +294,7 @@ std::pair<TokenKind, TokenData> Lexer::identifier() {
     if(keyword.has_value()) {
         return std::make_pair<TokenKind, TokenData>(std::move(keyword.value()), NoTokenData());
     } else {
-        return std::make_pair<TokenKind, TokenData>(TokenKind::Identifier, Identifier {.name = name});
+        return std::make_pair<TokenKind, TokenData>(TokenKind::Identifier, Identifier {.name = name, .span = span});
     };
 }
 
