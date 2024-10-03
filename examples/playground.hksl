@@ -26,6 +26,7 @@ fn mul(x: u32, y: u32) -> u32 {
     if y + 5 == 3 {
         bar();
     } else {
+        let q;
         q = 2 == 4;
     }
 
