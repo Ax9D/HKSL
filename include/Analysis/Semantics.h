@@ -1,7 +1,7 @@
 #pragma once
 
+#include "AST.h"
 #include <Analysis/Visitor.h>
-#include <optional>
 #include <vector>
 #include <unordered_map>
 #include <functional>
@@ -15,18 +15,20 @@ enum class ScopeKind {
 };
 
 struct VariableData {
+    const VarDecl* decl;
     Span span;
     bool initialized = false;
 };
+
 class Scope {
     public:
         Scope(ScopeKind kind);
         bool is_block() const;
         bool is_function() const;
         bool is_global() const;
-        VariableData* push_var(const Identifier& name);
+        VariableData* push_var_decl(const VarDecl* var);
         bool var_exists(const std::string& name);
-        VariableData* find_var(const std::string& name);
+        VariableData* find_var_decl(const std::string& name);
         void for_each_var(std::function<void (const std::string&, const VariableData&)> fn) const;
     private:
 
@@ -37,6 +39,7 @@ class Scope {
 struct SemanticsAnalysisResult {
     bool is_success();
     std::vector<std::string> errors;
+    std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
 };
 class SemanticsVisitor: private Visitor {
     public:
@@ -46,19 +49,24 @@ class SemanticsVisitor: private Visitor {
         void visit(const AST& ast) override;
         void visit_function(const Function* func) override;
         void visit_block_statement(const BlockStatement* block) override;
-        void visit_let_expr(const LetExpr* expr) override;
-        void visit_assignment_expr(const AssignmentExpr* expr) override;
-
+        void visit_var_decl(const VarDecl* var_decl) override;
+        void visit_let_expr(const LetExpr* let_expr) override;
+        void visit_assignment_expr(const AssignmentExpr* assignment_expr) override;
+        void visit_variable(const Variable* variable) override;
+        
+        VariableData* check_variable(const Variable* variable);
+        
         Scope& current_scope();
         void push_block();
         void pop_block();
-        void push_function();
+        void push_function(const Function* function);
         void pop_function();
         bool var_exists(const std::string& name);
-        VariableData* find_var(const std::string& name);
+        VariableData* find_var_decl(const std::string& name);
         void check_uninitialized();
 
         std::vector<Scope> scope_stack;
         std::vector<std::string> errors;
+        std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
 };
 }

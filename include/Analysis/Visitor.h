@@ -18,6 +18,7 @@ class Visitor {
         virtual void visit_binary_expr(const BinExpr* expr);
         virtual void visit_unary_expr(const UnaryExpr* expr);
         virtual void visit_variable(const Variable* variable);
+        virtual void visit_var_decl(const VarDecl* var_decl);
         virtual void visit_number_constant(const NumberConstant* expr);
         virtual void visit_call_expr(const CallExpr* expr);
         virtual void visit_assignment_expr(const AssignmentExpr* expr);
@@ -29,7 +30,7 @@ class Visitor {
         virtual void visit_function_name(const Identifier& name);
         virtual void visit_identifier(const Identifier& identifier);
         virtual void visit_type(const Identifier& type);
-        virtual void visit_function_arg(const FunctionArg& arg);
+        virtual void visit_function_arg(const VarDecl* arg);
         virtual void visit_call_arg(const Expr* arg);
 };
 

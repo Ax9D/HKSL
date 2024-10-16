@@ -1,3 +1,4 @@
+#include "AST.h"
 #include "Util.h"
 #include <Analysis/Visitor.h>
 
@@ -46,8 +47,8 @@ void Visitor::visit_block_statement(const BlockStatement* block) {
 void Visitor::visit_function(const Function* function) {
     visit_function_name(function->name);
 
-    for(const auto& arg: function->args) {
-        visit_function_arg(arg);
+    for(const auto arg: function->args) {
+        visit_function_arg(&arg);
     }
 
     if(function->return_type) {
@@ -69,6 +70,8 @@ void Visitor::visit_expr(const Expr* expr) {
             return visit_unary_expr((UnaryExpr*) expr);
         case ExprKind::Variable:
             return visit_variable((Variable*) expr);
+        case ExprKind::VarDecl:
+            return visit_var_decl((VarDecl*) expr);
         case ExprKind::NumberConstant:
             return visit_number_constant((NumberConstant*) expr);
         case ExprKind::CallExpr:
@@ -91,6 +94,13 @@ void Visitor::visit_unary_expr(const UnaryExpr* expr) {
 void Visitor::visit_variable(const Variable* variable) {
     visit_variable_name(variable->name);
 }
+void Visitor::visit_var_decl(const VarDecl* var_decl) {
+    visit_variable_name(var_decl->name);
+
+    if(var_decl->type) {
+        visit_type(*var_decl->type);
+    }
+}
 void Visitor::visit_number_constant(const NumberConstant* expr) {
     
 }
@@ -105,11 +115,8 @@ void Visitor::visit_assignment_expr(const AssignmentExpr* expr) {
     visit_expr(expr->rhs.get());
 }
 void Visitor::visit_let_expr(const LetExpr* expr) {
-    visit_variable(expr->variable.get());
+    visit_var_decl(expr->var_decl.get());
 
-    if(expr->type) {
-        visit_type(*expr->type);
-    }
     if(expr->rhs) {
         visit_expr(expr->rhs->get());
     }
@@ -127,9 +134,8 @@ void Visitor::visit_identifier(const Identifier& identifier) {}
 void Visitor::visit_type(const Identifier& type) {
     visit_identifier(type);
 }
-void Visitor::visit_function_arg(const FunctionArg& arg) {
-    visit_variable_name(arg.name);
-    visit_type(arg.type);
+void Visitor::visit_function_arg(const VarDecl* arg) {
+    visit_var_decl(arg);
 }
 void Visitor::visit_call_arg(const Expr* arg) {
     visit_expr(arg);
