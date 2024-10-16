@@ -13,7 +13,7 @@ class Parser {
         std::unique_ptr<Statement> expr_statement();
         std::unique_ptr<BlockStatement> block();
         std::unique_ptr<Statement> function();
-        std::vector<FunctionArg> function_args();
+        FunctionArgs function_args();
         std::unique_ptr<Statement> return_statement();
         std::unique_ptr<Statement> if_statement();
         std::unique_ptr<ElseStatement> else_statement();
@@ -29,6 +29,7 @@ class Parser {
         std::unique_ptr<Expr> place();
         std::unique_ptr<Expr> call_expr();
         std::unique_ptr<Variable> variable();
+        std::unique_ptr<VarDecl> var_decl();
         Identifier identifier();
         Identifier type();
     private:

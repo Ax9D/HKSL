@@ -13,6 +13,7 @@ enum class ExprKind {
     UnaryExpr,
     NumberConstant,
     Variable,
+    VarDecl,
     CallExpr,
     AssignmentExpr,
     LetExpr,
@@ -77,6 +78,15 @@ struct Variable: public Expr {
 
     Identifier name;
 };
+struct VarDecl: public Expr {
+    VarDecl(const Identifier& name);
+    VarDecl(const Identifier& name, std::optional<Identifier>& type);
+    ExprKind kind() const override;
+    void print(ASTPrinter& printer) const override;
+
+    Identifier name;
+    std::optional<Identifier> type;
+};
 
 using CallArgs = std::vector<std::unique_ptr<Expr>>;
 struct CallExpr: public Expr {
@@ -99,10 +109,9 @@ struct AssignmentExpr: public Expr {
 };
 
 struct LetExpr: public Expr {
-    LetExpr(std::unique_ptr<Variable> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs);
+    LetExpr(std::unique_ptr<VarDecl> var_decl, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs);
 
-    std::unique_ptr<Variable> variable;
-    std::optional<Identifier> type;
+    std::unique_ptr<VarDecl> var_decl;
     std::optional<std::unique_ptr<Expr>> rhs;
 
     ExprKind kind() const override;
@@ -159,17 +168,17 @@ struct ElseStatement: public Statement {
     std::unique_ptr<Statement> statement;
 };
 
-struct FunctionArg: ASTPrint {
-    Identifier name;
-    Identifier type;
+// struct FunctionArg: ASTPrint {
+//     std::unique_ptr<Variable> variable;
+//     Identifier type;    
+//     FunctionArg(std::unique_ptr<Variable> name, const Identifier& type);
 
-    FunctionArg(const Identifier& name, const Identifier& type);
+//     void print(ASTPrinter& printer) const override; 
+// };
 
-    void print(ASTPrinter& printer) const override; 
-};
-using FunctionArgs = std::vector<FunctionArg>;
+using FunctionArgs = std::vector<VarDecl>;
 struct Function: public Statement {
-    Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type);
+    Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type);
     Identifier name;
     FunctionArgs args;
     std::unique_ptr<BlockStatement> block;

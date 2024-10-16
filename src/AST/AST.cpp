@@ -76,6 +76,21 @@ ExprKind Variable::kind() const {
 void Variable::print(ASTPrinter& printer) const {
     printer.print(std::format("Variable({})", name.name));
 }
+
+VarDecl::VarDecl(const Identifier& name) {
+    this->name = name;
+    this->type = std::nullopt;
+}
+VarDecl::VarDecl(const Identifier& name, std::optional<Identifier>& type) {
+    this->name = name;
+    this->type = type;
+}
+ExprKind VarDecl::kind() const {
+    return ExprKind::VarDecl;
+}
+void VarDecl::print(ASTPrinter& printer) const {
+    printer.print(std::format("VarDecl({})", name.name));
+}
 CallExpr::CallExpr(const Identifier& fn_name, std::vector<std::unique_ptr<Expr>>& args) {
     this->fn_name = fn_name;
     this->args = std::move(args);
@@ -110,9 +125,8 @@ void AssignmentExpr::print(ASTPrinter &printer) const {
     node.field("lhs", lhs.get());
     node.field("lhs", rhs.get());
 }
-LetExpr::LetExpr(std::unique_ptr<Variable> variable, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs) {
-    this->variable = std::move(variable);
-    this->type = type;
+LetExpr::LetExpr(std::unique_ptr<VarDecl> var_decl, const std::optional<Identifier>& type, std::optional<std::unique_ptr<Expr>> rhs) {
+    this->var_decl = std::move(var_decl);
     this->rhs = std::move(rhs);
 }
 ExprKind LetExpr::kind() const {
@@ -120,11 +134,7 @@ ExprKind LetExpr::kind() const {
 }
 void LetExpr::print(ASTPrinter& printer) const {
     NodePrinter node("LetExpr", printer);
-    node.field("variable", variable.get());
-
-    if(type) {
-        node.field("type", type->name);
-    }
+    node.field("var_decl", var_decl.get());
 
     if(rhs) {
         node.field("rhs", rhs->get());
@@ -161,16 +171,15 @@ void BlockStatement::print(ASTPrinter& printer) const {
         }
     }
 }
-FunctionArg::FunctionArg(const Identifier& name, const Identifier& type) {
+// FunctionArg::FunctionArg(std::unique_ptr<Variable> variable, const Identifier& _type): type(_type){
+//     this->variable = std::move(variable);
+// }
+// void FunctionArg::print(ASTPrinter& printer) const {
+//     printer.print(std::format("{}: {}", variable->name.name, type.name));
+// }
+Function::Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type) {
     this->name = name;
-    this->type = type;
-}
-void FunctionArg::print(ASTPrinter& printer) const {
-    printer.print(std::format("{}: {}", name.name, type.name));
-}
-Function::Function(const Identifier& name, FunctionArgs&& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type) {
-    this->name = name;
-    this->args = args;
+    this->args = std::move(args);
     this->block = std::move(block);
     this->return_type = return_type;
 }

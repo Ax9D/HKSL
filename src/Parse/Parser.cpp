@@ -128,7 +128,7 @@ std::unique_ptr<Statement> Parser::function() {
     
     std::unique_ptr<BlockStatement> block_stmt = block();
 
-    return std::make_unique<Function>(name, std::move(args), std::move(block_stmt), return_type);
+    return std::make_unique<Function>(name, args, std::move(block_stmt), return_type);
 }
 FunctionArgs Parser::function_args() {
     FunctionArgs args;
@@ -140,9 +140,9 @@ FunctionArgs Parser::function_args() {
             const auto& name = maybe_name.unwrap_identifier();
             expect(TokenKind::Colon);
 
-            auto ty = type();
+            auto ty = std::make_optional<Identifier>(type());
 
-            args.push_back(FunctionArg(name, ty));
+            args.push_back(VarDecl(name, ty));
 
             if(!consume(TokenKind::Comma)) {
                 break;
@@ -194,13 +194,9 @@ std::unique_ptr<Expr> Parser::expr() {
 
 std::unique_ptr<Expr> Parser::let() {
     if(consume(TokenKind::KeywordLet)) {
-        auto variable_expr = variable();
-        auto let_expr = std::make_unique<LetExpr>(std::move(variable_expr), std::nullopt, std::nullopt);
-
-        if(consume(TokenKind::Colon)) {
-            // Is explictly typed
-            let_expr->type = type();
-        }
+        auto var_decl_expr = var_decl();
+        auto let_expr = std::make_unique<LetExpr>(std::move(var_decl_expr), std::nullopt, std::nullopt);
+        
         if(consume(TokenKind::Equals)) {
             auto rhs = expr();
             let_expr->rhs = std::move(rhs);
@@ -340,6 +336,17 @@ std::unique_ptr<Expr> Parser::call_expr() {
 }
 std::unique_ptr<Variable> Parser::variable() {
     return std::make_unique<Variable>(identifier());
+}
+std::unique_ptr<VarDecl> Parser::var_decl() {
+    auto name = identifier();
+
+    std::optional<Identifier> type_ = std::nullopt;
+    if(consume(TokenKind::Colon)) {
+        // Is explictly typed
+        type_ = type();
+    }
+
+    return std::make_unique<VarDecl>(name, type_);
 }
 Identifier Parser::identifier() {
     const auto& maybe_identifier = current();
