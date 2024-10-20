@@ -303,7 +303,7 @@ Span Lexer::current_span() { return Span{.line = line, .col = col}; }
 
 Token Lexer::token() {
     white_space();
-    if(consume_two('/', '/')) {
+    while(consume_two('/', '/')) {
         skip_to_next_line(); 
         white_space();
     } 
