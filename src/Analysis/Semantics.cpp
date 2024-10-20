@@ -191,7 +191,7 @@ VariableData* SemanticsVisitor::find_var_decl(const std::string& name) {
 }
 const Function* SemanticsVisitor::find_func_decl(const std::string& name) {
     int64_t index = scope_stack.size() - 1;
-    while(index >= 1 /*Global scope is at index 0*/) {
+    while(index >= 0 /*Global scope is at index 0*/) {
         auto& top = scope_stack[index];
 
         auto matching_func = top.find_func_decl(name);
