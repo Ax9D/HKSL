@@ -74,7 +74,14 @@ void SemanticsVisitor::visit_function(const Function* function) {
         return;
     }
     push_function(function);
-    Visitor::visit_function(function);
+    for(const auto& decl: function->args) {
+        auto var = current_scope().push_var_decl(&decl);
+        var->initialized = true;
+    }
+    Visitor::visit_block_statement(function->block.get());
+    if(function->return_type) {
+        Visitor::visit_type(*function->return_type);
+    }
     pop_function();
 }
 void SemanticsVisitor::visit_call_expr(const CallExpr* call_expr) {
