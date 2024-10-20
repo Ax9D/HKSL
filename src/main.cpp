@@ -1,7 +1,5 @@
+#include "Compiler.h"
 #include "FSUtil.h"
-#include "Semantics.h"
-#include <Parse/Lexer.h>
-#include <Parse/Parser.h>
 
 struct CLIArgs {
     const char* src_path;
@@ -17,22 +15,14 @@ int main(int argc, const char** argv) {
     CLIArgs args;
     args.parse(argc, argv);
     std::string code = HKSL::read_to_string(args.src_path);
-    std::cout << code << std::endl;
 
-    HKSL::Lexer lexer(code.c_str());
-    std::vector<HKSL::Token> tokens = lexer.collect_tokens();
-    HKSL::Parser parser(tokens.data());
+    HKSL::Compiler compiler;
+    auto result = compiler.compile(args.src_path, code);
 
-    auto ast = parser.program();
-
-    HKSL::SemanticsVisitor visitor;
-    auto result = visitor.run(ast);
-    HKSL::ASTPrinter printer;
-    ast.print(printer);
-    
     if(!result.is_success()) {
         for(auto error: result.errors) {
             std::cout << error << std::endl;
-        }
+            std::exit(-1);
+        }    
     }
 }

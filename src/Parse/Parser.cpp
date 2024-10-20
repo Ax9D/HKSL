@@ -62,14 +62,14 @@ void Parser::expect(TokenKind kind, const char* error) {
         }
     }
 }
-AST Parser::program() {
+std::unique_ptr<AST> Parser::program() {
     std::vector<std::unique_ptr<Statement>> statements;
 
     while(!is_eof()) {
         statements.push_back(statement());
     }
 
-    return AST(statements);
+    return std::make_unique<AST>(statements);
 }
 std::unique_ptr<Statement> Parser::statement() {
     if(matches(TokenKind::KeywordFn)) {
