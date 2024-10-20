@@ -20,6 +20,7 @@ enum class ExprKind {
 };
 
 bool expr_kind_is_place(ExprKind kind);
+const char* expr_kind_to_string(ExprKind kind);
 
 struct Expr: public ASTNode {
     virtual ~Expr() = default;
@@ -43,9 +44,10 @@ enum class BinOp {
 std::string bin_op_to_string(BinOp op);
 
 struct UnaryExpr: public Expr {
-    UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr);
+    UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr, Token op_token);
 
     UnaryOp op;
+    Token op_token;
     std::unique_ptr<Expr> expr;
 
     ExprKind kind() const override;
@@ -53,12 +55,13 @@ struct UnaryExpr: public Expr {
 };
 
 struct BinExpr: public Expr {
-    BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right);
+    BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, Token op_token);
     
     ExprKind kind() const override;
     void print(ASTPrinter& printer) const override;
 
     BinOp op;
+    Token op_token;
     std::unique_ptr<Expr> left;
     std::unique_ptr<Expr> right;
 };
@@ -99,10 +102,11 @@ struct CallExpr: public Expr {
 };
 
 struct AssignmentExpr: public Expr {
-    AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs);
+    AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs, Token eq_token);
 
     std::unique_ptr<Expr> lhs;
     std::unique_ptr<Expr> rhs;
+    Token eq_token;
 
     ExprKind kind() const override;
     void print(ASTPrinter& printer) const override;

@@ -4,7 +4,7 @@
 
 namespace HKSL {
 std::string Span::to_string() const {
-    return std::format("Span {{ line: {}, col: {}}}", line, col);
+    return std::format("{}:{}", line, col);
 }
 std::string token_kind_to_debug_string(TokenKind token) {
   switch (token) {
@@ -221,7 +221,7 @@ void Lexer::white_space() {
     }
 }
 void Lexer::skip_to_next_line() {
-    while(matches('\n')) {
+    while(!matches('\n')) {
         advance();
     }
 }

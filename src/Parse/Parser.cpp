@@ -1,3 +1,4 @@
+#include "AST.h"
 #include <Parse/Parser.h>
 #include <format>
 
@@ -24,7 +25,7 @@ void Parser::advance() {
 bool Parser::matches(TokenKind kind) const {
     return current().kind == kind;
 }
-bool Parser::consume(std::initializer_list<TokenKind> kinds, TokenKind* out_consumed) {
+bool Parser::consume(std::initializer_list<TokenKind> kinds, Token* out_consumed) {
     for(auto kind: kinds) {
         if(consume(kind, out_consumed)) {
             return true;
@@ -33,14 +34,13 @@ bool Parser::consume(std::initializer_list<TokenKind> kinds, TokenKind* out_cons
 
     return false;
 }
-bool Parser::consume(TokenKind kind, TokenKind* out_consumed) {
+bool Parser::consume(TokenKind kind, Token* out_consumed) {
     if(matches(kind)) {
         if(out_consumed) {
-            *out_consumed = kind;
+            *out_consumed = current();
         }
 
         advance();
-
         return true;
     }
 
@@ -210,26 +210,27 @@ std::unique_ptr<Expr> Parser::let() {
 std::unique_ptr<Expr> Parser::assignment() {
     std::unique_ptr<Expr> lhs = equality();
 
-    const Token& last = current();
-    if(consume(TokenKind::Equals)) {
+    Token op_token;
+    if(consume(TokenKind::Equals, &op_token)) {
+
         if(!expr_kind_is_place(lhs->kind())) {
-            HKSL_ERROR(std::format("Target of assignment can only be a variable: {}:{}", last.span.line, last.span.col));
+            HKSL_ERROR(std::format("Target of assignment can only be a variable, found: {}: {}:{}", expr_kind_to_string(lhs->kind()), op_token.span.line, op_token.span.col));
         }
         std::unique_ptr<Expr> rhs = assignment();
         
-        lhs = std::make_unique<AssignmentExpr>(std::move(lhs), std::move(rhs));
+        lhs = std::make_unique<AssignmentExpr>(std::move(lhs), std::move(rhs), op_token);
     }
 
     return lhs;
 }
 std::unique_ptr<Expr> Parser::equality() {
     auto left = term();
-
-    if(consume(TokenKind::DoubleEquals)) {
+    Token op_token;
+    if(consume(TokenKind::DoubleEquals, &op_token)) {
         auto right = term();
         BinOp op = BinOp::Equals;
 
-        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right));
+        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right), op_token);
     }
 
     return left;
@@ -237,10 +238,10 @@ std::unique_ptr<Expr> Parser::equality() {
 std::unique_ptr<Expr> Parser::term() {
     auto left = factor();
 
-    TokenKind op_token;
+    Token op_token;
     while(consume({TokenKind::Plus, TokenKind::Minus}, &op_token)) {
         BinOp op;
-        switch(op_token) {
+        switch(op_token.kind) {
             case TokenKind::Plus:
                 op = BinOp::Add;
                 break;
@@ -253,7 +254,7 @@ std::unique_ptr<Expr> Parser::term() {
 
         auto right = factor();
 
-        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right));
+        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right), op_token);
     }
 
     return left;
@@ -261,10 +262,10 @@ std::unique_ptr<Expr> Parser::term() {
 std::unique_ptr<Expr> Parser::factor() {
     auto left = unary();
 
-    TokenKind op_token;
+    Token op_token;
     while(consume({TokenKind::Star, TokenKind::Slash}, &op_token)) {
         BinOp op;
-        switch(op_token) {
+        switch(op_token.kind) {
             case TokenKind::Star:
                 op = BinOp::Multiply;
                 break;
@@ -277,15 +278,16 @@ std::unique_ptr<Expr> Parser::factor() {
 
         auto right = unary();
 
-        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right));
+        left = std::make_unique<BinExpr>(op, std::move(left), std::move(right), op_token);
     }
 
     return left;
 }
 std::unique_ptr<Expr> Parser::unary() {
-    if(consume(TokenKind::Minus)) {
+    Token op_token;
+    if(consume(TokenKind::Minus, &op_token)) {
         std::unique_ptr<Expr> inner_expr = unary();
-        return std::make_unique<UnaryExpr>(UnaryOp::Negate, std::move(inner_expr));
+        return std::make_unique<UnaryExpr>(UnaryOp::Negate, std::move(inner_expr), op_token);
     } 
 
     return primary();

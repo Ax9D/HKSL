@@ -4,7 +4,26 @@ namespace HKSL {
 bool expr_kind_is_place(ExprKind kind) {
     return kind == ExprKind::Variable || kind == ExprKind::CallExpr;
 }
-
+const char* expr_kind_to_string(ExprKind kind) {
+    switch(kind) {
+        case ExprKind::BinExpr:
+            return "BinExpr";
+        case ExprKind::UnaryExpr:
+            return "UnaryExpr";
+        case ExprKind::NumberConstant:
+            return "NumberConstant";
+        case ExprKind::Variable:
+            return "Variable";
+        case ExprKind::VarDecl:
+            return "VarDecl";
+        case ExprKind::CallExpr:
+            return "CallExpr";
+        case ExprKind::AssignmentExpr:
+            return "AssignmentExpr";
+        case ExprKind::LetExpr:
+            return "LetExpr";
+    }
+}
 std::string unary_op_to_string(UnaryOp op) {
     switch(op) {
         case UnaryOp::Negate:
@@ -13,9 +32,10 @@ std::string unary_op_to_string(UnaryOp op) {
             HKSL_ERROR("Unimplemented");
     }
 }
-UnaryExpr::UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr) {
+UnaryExpr::UnaryExpr(UnaryOp op, std::unique_ptr<Expr> expr, Token op_token) {
     this->op = op;
     this->expr = std::move(expr);
+    this->op_token = op_token;
 }
 ExprKind UnaryExpr::kind() const {
     return ExprKind::UnaryExpr;
@@ -40,10 +60,11 @@ std::string bin_op_to_string(BinOp op) {
                 return "==";
     }
 }
-BinExpr::BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right) {
+BinExpr::BinExpr(BinOp op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, Token op_token) {
     this->op = op;
     this->left = std::move(left);
     this->right = std::move(right);
+    this->op_token = op_token;
 }
 ExprKind BinExpr::kind() const {
     return ExprKind::BinExpr;
@@ -111,9 +132,10 @@ void CallExpr::print(ASTPrinter& printer) const {
         }
     }
 }
-AssignmentExpr::AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs) {
+AssignmentExpr::AssignmentExpr(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs, Token eq_token) {
     this->lhs = std::move(lhs);
     this->rhs = std::move(rhs);
+    this->eq_token = eq_token;
 }
 
 ExprKind AssignmentExpr::kind() const {

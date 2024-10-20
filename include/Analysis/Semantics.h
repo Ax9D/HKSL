@@ -27,13 +27,27 @@ class Scope {
         bool is_function() const;
         bool is_global() const;
         VariableData* push_var_decl(const VarDecl* var);
+        void push_function(const Function* func);
         bool var_exists(const std::string& name);
+        bool func_exists(const std::string& name);
         VariableData* find_var_decl(const std::string& name);
+        const Function* find_func_decl(const std::string& name);
         void for_each_var(std::function<void (const std::string&, const VariableData&)> fn) const;
     private:
 
     ScopeKind kind;
     std::unordered_map<std::string, VariableData> variables;
+    std::unordered_map<std::string, const Function*> functions; 
+};
+
+class SymbolResolver {
+    public: 
+        SymbolResolver();
+        Function* get_function(const CallExpr* expr);
+        Variable* get_var_decl(const Variable* var);
+    private:
+        std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
+        std::unordered_map<const CallExpr*, const Function*> call_to_func_decl;
 };
 
 struct SemanticsAnalysisResult {
@@ -51,6 +65,7 @@ class SemanticsVisitor: private Visitor {
         void visit_block_statement(const BlockStatement* block) override;
         void visit_var_decl(const VarDecl* var_decl) override;
         void visit_let_expr(const LetExpr* let_expr) override;
+        void visit_call_expr(const CallExpr* call_expr) override;
         void visit_assignment_expr(const AssignmentExpr* assignment_expr) override;
         void visit_variable(const Variable* variable) override;
         
@@ -62,7 +77,9 @@ class SemanticsVisitor: private Visitor {
         void push_function(const Function* function);
         void pop_function();
         bool var_exists(const std::string& name);
+        bool func_exists(const std::string& name);
         VariableData* find_var_decl(const std::string& name);
+        const Function* find_func_decl(const std::string& name);
         void check_uninitialized();
 
         std::vector<Scope> scope_stack;

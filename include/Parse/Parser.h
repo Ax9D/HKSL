@@ -38,8 +38,8 @@ class Parser {
         void advance();
         bool is_eof();
         bool matches(TokenKind kind) const;
-        bool consume(std::initializer_list<TokenKind> kinds, TokenKind* out_consumed = nullptr);
-        bool consume(TokenKind kind, TokenKind* out_consumed = nullptr);  
+        bool consume(std::initializer_list<TokenKind> kinds, Token* out_consumed = nullptr);
+        bool consume(TokenKind kind, Token* out_consumed = nullptr);  
         void unexpected_token();
         void expect(TokenKind kind, const char* error = nullptr);
 
