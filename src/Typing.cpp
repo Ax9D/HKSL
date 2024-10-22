@@ -1,8 +1,12 @@
 #include <Typing.h>
 #include <cassert>
-#include <string>
 
 namespace HKSL {
+uint64_t Void::id() const { return HKSL_VOID_TYPE_ID; }
+const char *Void::name() const { return "void"; }
+TypeKind Void::kind() const { return TypeKind::Void; }
+size_t Void::size_of() const { return 0; }
+
 uint64_t Float::id() const { return HKSL_FLOAT_TYPE_ID; }
 const char *Float::name() const { return "float"; }
 TypeKind Float::kind() const { return TypeKind::Float; }
@@ -18,10 +22,17 @@ const char *Float3::name() const { return "float3"; }
 TypeKind Float3::kind() const { return TypeKind::Float3; }
 size_t Float3::size_of() const { return 4 * 3; }
 
+uint64_t Float4::id() const { return HKSL_FLOAT4_TYPE_ID; }
+const char *Float4::name() const { return "float4"; }
+TypeKind Float4::kind() const { return TypeKind::Float4; }
+size_t Float4::size_of() const { return 4 * 4; }
+
 TypeRegistry::TypeRegistry() {
+  register_type(std::make_unique<Void>());
   register_type(std::make_unique<Float>());
   register_type(std::make_unique<Float2>());
   register_type(std::make_unique<Float3>());
+  register_type(std::make_unique<Float4>());
 }
 bool TypeRegistry::is_primitive(const Type &type) {
   return type.kind() != TypeKind::Struct;

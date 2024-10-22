@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <AST.h>
 
+#define HKSL_VOID_TYPE_ID 0
 #define HKSL_FLOAT_TYPE_ID 1
 #define HKSL_FLOAT2_TYPE_ID 2
 #define HKSL_FLOAT3_TYPE_ID 3
@@ -25,6 +26,12 @@ class Type {
         virtual const char* name() const = 0;
         virtual size_t size_of() const = 0;
         virtual TypeKind kind() const = 0;
+};
+struct Void: public Type {
+    uint64_t id() const override;
+    const char* name() const override;
+    virtual size_t size_of() const override;
+    TypeKind kind() const override;
 };
 
 struct Float: public Type {
