@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
-#include <AST.h>
+#include <string>
 
 #define HKSL_VOID_TYPE_ID 0
 #define HKSL_FLOAT_TYPE_ID 1
@@ -77,6 +77,8 @@ class TypeRegistry {
         bool is_primitive(const Type& type);
         std::unordered_map<std::string, std::unique_ptr<Type>> types;
 };
+
+class Expr;
 
 class TypeResolver {
     public:

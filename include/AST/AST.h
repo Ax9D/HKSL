@@ -2,6 +2,8 @@
 #include <string>
 #include <Parse/Lexer.h>
 #include <AST/Printer.h>
+#include <Typing.h>
+#include <Function.h>
 
 namespace HKSL {
 struct ASTNode: ASTPrint {
@@ -83,12 +85,12 @@ struct Variable: public Expr {
 };
 struct VarDecl: public Expr {
     VarDecl(const Identifier& name);
-    VarDecl(const Identifier& name, std::optional<Identifier>& type);
+    VarDecl(const Identifier& name, std::optional<Type*>& type);
     ExprKind kind() const override;
     void print(ASTPrinter& printer) const override;
 
     Identifier name;
-    std::optional<Identifier> type;
+    std::optional<Type*> type;
 };
 
 using CallArgs = std::vector<std::unique_ptr<Expr>>;
@@ -181,23 +183,30 @@ struct ElseStatement: public Statement {
 // };
 
 using FunctionArgs = std::vector<VarDecl>;
-struct Function: public Statement {
-    Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type);
-    Identifier name;
-    FunctionArgs args;
-    std::unique_ptr<BlockStatement> block;
-    std::optional<Identifier> return_type;
+struct Function: public Statement, public FunctionDef {
+    Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, Type* return_type);
+    Identifier m_name;
+    FunctionArgs m_args;
+    std::unique_ptr<BlockStatement> m_block;
+    Type* m_return_type;
+
+    const char* name() const override;
+    Type* arg_at(size_t i) const override;
+    Type* return_type() const override;
+    size_t n_args() const override;
 
     StatementKind kind() const override;
     void print(ASTPrinter& printer) const override;
+
 };
 
 struct ReturnStatement: public Statement {
-    ReturnStatement(std::optional<std::unique_ptr<Expr>> value);
+    ReturnStatement(std::optional<std::unique_ptr<Expr>> value, Token ret_token);
     
     StatementKind kind() const override;
     void print(ASTPrinter& printer) const override;
 
+    Token ret_token;
     std::optional<std::unique_ptr<Expr>> value;
 };
 

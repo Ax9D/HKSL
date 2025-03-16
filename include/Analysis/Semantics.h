@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AST.h"
+#include <AST.h>
+#include <Context.h>
 #include <Analysis/Visitor.h>
 #include <vector>
 #include <unordered_map>
@@ -40,34 +41,19 @@ class Scope {
     std::unordered_map<std::string, const Function*> functions; 
 };
 
-class SymbolResolver {
-    public: 
-        SymbolResolver();
-        Function* get_function(const CallExpr* expr);
-        Variable* get_var_decl(const Variable* var);
-    private:
-        std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
-        std::unordered_map<const CallExpr*, const Function*> call_to_func_decl;
-};
-
-struct SemanticsAnalysisResult {
-    bool is_success();
-    std::vector<std::string> errors;
-    std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
-};
 class SemanticsVisitor: private Visitor {
     public:
-        SemanticsVisitor();
-        SemanticsAnalysisResult run(const AST& ast);
+        SemanticsVisitor(CompilationContext& context);
+        bool run();
     private:
-        void visit(const AST& ast) override;
-        void visit_function(const Function* func) override;
-        void visit_block_statement(const BlockStatement* block) override;
-        void visit_var_decl(const VarDecl* var_decl) override;
-        void visit_let_expr(const LetExpr* let_expr) override;
-        void visit_call_expr(const CallExpr* call_expr) override;
-        void visit_assignment_expr(const AssignmentExpr* assignment_expr) override;
-        void visit_variable(const Variable* variable) override;
+        void visit(AST& ast) override;
+        void visit_function(Function* func) override;
+        void visit_block_statement(BlockStatement* block) override;
+        void visit_var_decl(VarDecl* var_decl) override;
+        void visit_let_expr(LetExpr* let_expr) override;
+        void visit_call_expr(CallExpr* call_expr) override;
+        void visit_assignment_expr(AssignmentExpr* assignment_expr) override;
+        void visit_variable(Variable* variable) override;
         
         VariableData* check_variable(const Variable* variable);
         
@@ -82,8 +68,7 @@ class SemanticsVisitor: private Visitor {
         const Function* find_func_decl(const std::string& name);
         void check_uninitialized();
 
+        CompilationContext& context;
         std::vector<Scope> scope_stack;
-        std::vector<std::string> errors;
-        std::unordered_map<const Variable*, const VarDecl*> ref_to_decl;
 };
 }

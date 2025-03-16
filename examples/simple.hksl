@@ -1,0 +1,8 @@
+fn foo(x: float3, y: float3) -> float3 {
+    let z = x + y;
+    return z;
+}
+fn fragment_main() {
+    let color = foo(float3(1.0, 0.0, 0.0), float3(0.0, 1.0, 0.0));
+    return color;
+}

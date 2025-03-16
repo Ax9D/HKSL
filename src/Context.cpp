@@ -1,8 +1,11 @@
 #include <Context.h>
 #include <format>
+#include <cassert>
 
 namespace HKSL {
-CompilationContext::CompilationContext(std::unique_ptr<AST> _ast): ast(std::move(_ast)) {}
+CompilationContext::CompilationContext() {
+    this->ast = nullptr;
+}
 
 void CompilationContext::error(Span location, const std::string &message) {
     is_failing = true;
@@ -10,6 +13,10 @@ void CompilationContext::error(Span location, const std::string &message) {
 }
 const std::vector<std::string>& CompilationContext::errors() {
     return m_errors;
+}
+void CompilationContext::set_ast(std::unique_ptr<AST> ast) {
+    assert(!this->ast && "AST can only be set once");
+    this->ast = std::move(ast);
 }
 AST& CompilationContext::get_ast() {
     return *ast;

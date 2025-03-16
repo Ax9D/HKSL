@@ -13,11 +13,12 @@ CompilationResult Compiler::compile(const std::string& filename, const std::stri
     Lexer lexer(source.c_str());
 
     auto tokens = lexer.collect_tokens();
-    Parser parser(tokens.data());
+    CompilationContext context;
+
+    Parser parser(context, tokens.data());
     auto ast = parser.program();
-
-    CompilationContext context(std::move(ast));
-
+    
+    context.set_ast(std::move(ast));
     SemanticsVisitor semantics_visitor(context);
 
     semantics_visitor.run();

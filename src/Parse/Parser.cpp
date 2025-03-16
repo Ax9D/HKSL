@@ -3,7 +3,7 @@
 #include <format>
 
 namespace HKSL {
-Parser::Parser(const Token* tokens) {
+Parser::Parser(CompilationContext& _context, const Token* tokens): context(_context) {
     remaining = tokens;
 }
 const Token& Parser::current() const {
@@ -51,8 +51,8 @@ void Parser::unexpected_token() {
     std::string token = token_kind_to_string(current().kind);
     HKSL_ERROR(std::format("Unexpected token: {} on line {}:{}", token, span.line, span.col));
 }
-void Parser::expect(TokenKind kind, const char* error) {
-    if(!consume(kind)) {
+void Parser::expect(TokenKind kind, Token* out_consumed, const char* error) {
+    if(!consume(kind, out_consumed)) {
         Span span = current().span;
         std::string token = token_kind_to_string(kind);
         if(error) {
@@ -85,9 +85,10 @@ std::unique_ptr<Statement> Parser::statement() {
     }
 }
 std::unique_ptr<Statement> Parser::return_statement() {
-    expect(TokenKind::KeywordReturn);
+    Token ret_token;
+    expect(TokenKind::KeywordReturn, &ret_token);
 
-    auto ret = std::make_unique<ReturnStatement>(std::nullopt);
+    auto ret = std::make_unique<ReturnStatement>(std::nullopt, ret_token);
 
     if(!consume(TokenKind::Semicolon)) {
         ret->value = expr();
@@ -119,13 +120,12 @@ std::unique_ptr<Statement> Parser::function() {
 
     FunctionArgs args = function_args();
 
-    std::optional<Identifier> return_type = std::nullopt;
+    Type* return_type = context.type_registry().get_void();
 
     if(consume(TokenKind::RightArrow)) {
         return_type = type();
     }
 
-    
     std::unique_ptr<BlockStatement> block_stmt = block();
 
     return std::make_unique<Function>(name, args, std::move(block_stmt), return_type);
@@ -140,7 +140,7 @@ FunctionArgs Parser::function_args() {
             const auto& name = maybe_name.unwrap_identifier();
             expect(TokenKind::Colon);
 
-            auto ty = std::make_optional<Identifier>(type());
+            auto ty = std::make_optional<Type*>(type());
 
             args.push_back(VarDecl(name, ty));
 
@@ -342,7 +342,7 @@ std::unique_ptr<Variable> Parser::variable() {
 std::unique_ptr<VarDecl> Parser::var_decl() {
     auto name = identifier();
 
-    std::optional<Identifier> type_ = std::nullopt;
+    std::optional<Type*> type_ = std::nullopt;
     if(consume(TokenKind::Colon)) {
         // Is explictly typed
         type_ = type();
@@ -355,9 +355,17 @@ Identifier Parser::identifier() {
     expect(TokenKind::Identifier);
     return maybe_identifier.unwrap_identifier();
 }
-Identifier Parser::type() {
+Type* Parser::type() {
     const auto& maybe_identifier = current();
-    expect(TokenKind::Identifier, "Expected type");
-    return maybe_identifier.unwrap_identifier();
+    expect(TokenKind::Identifier, nullptr, "Expected type");
+    auto type_name = maybe_identifier.unwrap_identifier();
+
+    auto type = context.type_registry().get(type_name.name);
+
+    if(!type) {
+        HKSL_ERROR(std::format("Unknown type: {}", type_name.name));
+    }
+
+    return type;
 }
 }

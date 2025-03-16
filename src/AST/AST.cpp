@@ -102,7 +102,7 @@ VarDecl::VarDecl(const Identifier& name) {
     this->name = name;
     this->type = std::nullopt;
 }
-VarDecl::VarDecl(const Identifier& name, std::optional<Identifier>& type) {
+VarDecl::VarDecl(const Identifier& name, std::optional<Type*>& type) {
     this->name = name;
     this->type = type;
 }
@@ -199,43 +199,41 @@ void BlockStatement::print(ASTPrinter& printer) const {
 // void FunctionArg::print(ASTPrinter& printer) const {
 //     printer.print(std::format("{}: {}", variable->name.name, type.name));
 // }
-Function::Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, const std::optional<Identifier>& return_type) {
-    this->name = name;
-    this->args = std::move(args);
-    this->block = std::move(block);
-    this->return_type = return_type;
+Function::Function(const Identifier& name, FunctionArgs& args, std::unique_ptr<BlockStatement> block, Type* return_type) {
+    this->m_name = name;
+    this->m_args = std::move(args);
+    this->m_block = std::move(block);
+    this->m_return_type = return_type;
 }
 StatementKind Function::kind() const {
     return StatementKind::Function;
 }
 void Function::print(ASTPrinter& printer) const {
     NodePrinter node("Function", printer);
-    node.field("name", name.name);
+    node.field("name", m_name.name);
     node.name("args");
 
     {
-        ArrayPrinter array(args.size(), printer);
-        for(size_t i = 0; i < args.size(); i++) {
-            array.print_item(&args[i]);
+        ArrayPrinter array(m_args.size(), printer);
+        for(size_t i = 0; i < m_args.size(); i++) {
+            array.print_item(&m_args[i]);
         }
     }
 
     node.name("block");
     {
-        ArrayPrinter array(block->statements.size(), printer);
-        for(size_t i = 0; i < block->statements.size(); i++) {
-            array.print_item(block->statements[i].get());
+        ArrayPrinter array(m_block->statements.size(), printer);
+        for(size_t i = 0; i < m_block->statements.size(); i++) {
+            array.print_item(m_block->statements[i].get());
         }
     }
 
-    if(return_type) {
-        node.field("return_type", return_type->name);
-    }
-
+    node.field("return_type", m_return_type->name());
 }
 
-ReturnStatement::ReturnStatement(std::optional<std::unique_ptr<Expr>> value) {
+ReturnStatement::ReturnStatement(std::optional<std::unique_ptr<Expr>> value, Token ret_token) {
     this->value = std::move(value);
+    this->ret_token = ret_token;
 }
 StatementKind ReturnStatement::kind() const {
     return StatementKind::Return;

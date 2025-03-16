@@ -41,8 +41,9 @@ bool TypeRegistry::register_type(std::unique_ptr<Type> type) {
   // Non primitive types disabled for now
   assert(is_primitive(*type));
 
-  bool exists = !(types.find(type->name()) == types.end());
-  types[type->name()] = std::move(type);
+  std::string type_name = type->name();
+  bool exists = !(types.find(type_name) == types.end());
+  types[type_name] = std::move(type);
 
   return exists;
 }

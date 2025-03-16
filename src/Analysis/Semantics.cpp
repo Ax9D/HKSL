@@ -26,7 +26,7 @@ VariableData* Scope::push_var_decl(const VarDecl* var) {
     return &variables[var->name.name];
 }
 void Scope::push_function(const Function* func) {
-    functions[func->name.name] = func;
+    functions[func->m_name.name] = func;
 }
 bool Scope::var_exists(const std::string& name) {
     return find_var_decl(name) != nullptr;
@@ -52,60 +52,58 @@ void Scope::for_each_var(std::function<void (const std::string &, const Variable
         fn(name, data);
     }
 }
-SemanticsAnalysisResult SemanticsVisitor::run(const AST& ast) {
-    visit(ast);
-
-    return SemanticsAnalysisResult {
-        .errors = std::move(errors),
-        .ref_to_decl = std::move(ref_to_decl)
-    };
+bool SemanticsVisitor::run() {
+    visit(context.get_ast());
+    return context.is_success();
 }
-SemanticsVisitor::SemanticsVisitor() {
+SemanticsVisitor::SemanticsVisitor(CompilationContext& _context): context(_context) {
     scope_stack.push_back(Scope(ScopeKind::Global));
 }
-void SemanticsVisitor::visit(const AST &ast) {
+void SemanticsVisitor::visit(AST& ast) {
     Visitor::visit(ast);
     // Check for unitialized variables in the global scope
     check_uninitialized();
 }
-void SemanticsVisitor::visit_function(const Function* function) {
-    if(current_scope().find_func_decl(function->name.name)) {
-        errors.push_back(std::format("{}: Redefinition of function {}", function->name.span.to_string(), function->name.name));
+void SemanticsVisitor::visit_function(Function* function) {
+    if(current_scope().find_func_decl(function->m_name.name)) {
+        context.error(function->m_name.span, std::format("Redefinition of function {}", function->m_name.span.to_string()));
         return;
     }
     push_function(function);
-    for(const auto& decl: function->args) {
+    for(const auto& decl: function->m_args) {
         auto var = current_scope().push_var_decl(&decl);
         var->initialized = true;
     }
-    Visitor::visit_block_statement(function->block.get());
-    if(function->return_type) {
-        Visitor::visit_type(*function->return_type);
+    Visitor::visit_block_statement(function->m_block.get());
+    if(function->m_return_type) {
+        Visitor::visit_type(function->m_return_type);
     }
     pop_function();
 }
-void SemanticsVisitor::visit_call_expr(const CallExpr* call_expr) {
+void SemanticsVisitor::visit_call_expr(CallExpr* call_expr) {
     auto function_decl = find_func_decl(call_expr->fn_name.name);
     if(!function_decl) {
         Span current_span = call_expr->fn_name.span;
 
-        errors.push_back(std::format("{}: Use of undeclared function {}", current_span.to_string(), call_expr->fn_name.name));
+        context.error(current_span, std::format("Use of undeclared function {}", call_expr->fn_name.name));
         return;
     }
 
+    context.symbol_resolver().register_function_ref(call_expr, function_decl);
+
     Visitor::visit_call_expr(call_expr);
 }
-void SemanticsVisitor::visit_block_statement(const BlockStatement* block) {
+void SemanticsVisitor::visit_block_statement(BlockStatement* block) {
     push_block();
     Visitor::visit_block_statement(block);
     pop_block();
 }
-void SemanticsVisitor::visit_var_decl(const VarDecl* var_decl) {
+void SemanticsVisitor::visit_var_decl(VarDecl* var_decl) {
     auto& var = var_decl->name;
     // Variable names must be unique in a scope; no shadowing
     if(find_var_decl(var.name)) {
         Span current_span = var.span;
-        errors.push_back(std::format("{}: Redefinition of {} on", current_span.to_string(), var.name));
+        context.error(current_span, std::format("Redefinition of {}", var.name));
         return;
     } else {
         current_scope().push_var_decl(var_decl);
@@ -113,7 +111,7 @@ void SemanticsVisitor::visit_var_decl(const VarDecl* var_decl) {
 
     Visitor::visit_var_decl(var_decl);
 }
-void SemanticsVisitor::visit_let_expr(const LetExpr* let_expr) {
+void SemanticsVisitor::visit_let_expr(LetExpr* let_expr) {
     Visitor::visit_let_expr(let_expr);
 
     auto decl = find_var_decl(let_expr->var_decl->name.name);
@@ -122,10 +120,10 @@ void SemanticsVisitor::visit_let_expr(const LetExpr* let_expr) {
         decl->initialized = true;
     }
 }
-void SemanticsVisitor::visit_assignment_expr(const AssignmentExpr* assignment_expr) {
+void SemanticsVisitor::visit_assignment_expr(AssignmentExpr* assignment_expr) {
     assert(assignment_expr->lhs->kind() == ExprKind::Variable);
 
-    const Variable* assignment_target = (const Variable*) assignment_expr->lhs.get();
+    const Variable* assignment_target = (Variable*) assignment_expr->lhs.get();
 
     auto variable_data = check_variable(assignment_target);
 
@@ -135,7 +133,7 @@ void SemanticsVisitor::visit_assignment_expr(const AssignmentExpr* assignment_ex
 
     visit_expr(assignment_expr->rhs.get());
 }
-void SemanticsVisitor::visit_variable(const Variable* variable) {
+void SemanticsVisitor::visit_variable(Variable* variable) {
     check_variable(variable);
     Visitor::visit_variable(variable);
 }
@@ -143,11 +141,11 @@ VariableData* SemanticsVisitor::check_variable(const Variable* variable) {
     auto* prev_var = find_var_decl(variable->name.name);
     if(!prev_var) {
         Span current_span = variable->name.span;
-        errors.push_back(std::format("Use of undeclared variable {} on {}:{}", variable->name.name, current_span.line, current_span.col));
+        context.error(current_span, std::format("Use of undeclared variable {}", variable->name.name));
         return nullptr;
     }
 
-    ref_to_decl[variable] = prev_var->decl;
+    context.symbol_resolver().register_variable_ref(variable, prev_var->decl);
     return prev_var;
 }
 Scope& SemanticsVisitor::current_scope() {
@@ -198,7 +196,7 @@ VariableData* SemanticsVisitor::find_var_decl(const std::string& name) {
 }
 const Function* SemanticsVisitor::find_func_decl(const std::string& name) {
     int64_t index = scope_stack.size() - 1;
-    while(index >= 0 /*Global scope is at index 0*/) {
+    while(index >= 0) {
         auto& top = scope_stack[index];
 
         auto matching_func = top.find_func_decl(name);
@@ -215,11 +213,8 @@ const Function* SemanticsVisitor::find_func_decl(const std::string& name) {
 void SemanticsVisitor::check_uninitialized() {
     current_scope().for_each_var([this](const std::string& name, const VariableData& data){
             if(!data.initialized) {
-                errors.push_back(std::format("Variable {} has not been initialized {}:{}", name, data.span.line, data.span.col));
+                context.error(data.span, std::format("Variable {} has not been initialized", name));
             }
     });
-}
-bool SemanticsAnalysisResult::is_success() {
-    return errors.empty();
 }
 }

@@ -3,12 +3,12 @@
 #include <Analysis/Visitor.h>
 
 namespace HKSL {
-void Visitor::visit(const AST& ast) {
+void Visitor::visit(AST& ast) {
     for(auto& statement: ast.statements) {
         visit_statement(statement.get());
     }
 }
-void Visitor::visit_statement(const Statement* statement) {
+void Visitor::visit_statement(Statement* statement) {
     switch(statement->kind()) {
         case StatementKind::Expr:
             return visit_expr_statement((ExprStatement*) statement);
@@ -26,43 +26,43 @@ void Visitor::visit_statement(const Statement* statement) {
             HKSL_TODO();
     }
 }
-void Visitor::visit_expr_statement(const ExprStatement* expr) {
+void Visitor::visit_expr_statement(ExprStatement* expr) {
     visit_expr(expr->expr.get());
 }
-void Visitor::visit_if_statement(const IfStatement* if_statement) {
+void Visitor::visit_if_statement(IfStatement* if_statement) {
     visit_expr(if_statement->condition.get());
     visit_block_statement(if_statement->then_block.get());
     if(if_statement->else_stmt) {
         visit_statement(if_statement->else_stmt->get());
     }
 }
-void Visitor::visit_else_statement(const ElseStatement* else_statement) {
+void Visitor::visit_else_statement(ElseStatement* else_statement) {
     visit_statement(else_statement->statement.get());
 }
-void Visitor::visit_block_statement(const BlockStatement* block) {
-    for(const auto& statement: block->statements) {
+void Visitor::visit_block_statement(BlockStatement* block) {
+    for(auto& statement: block->statements) {
         visit_statement(statement.get());
     }
 }
-void Visitor::visit_function(const Function* function) {
-    visit_function_name(function->name);
+void Visitor::visit_function(Function* function) {
+    visit_function_name(function->m_name);
 
-    for(const auto arg: function->args) {
+    for(auto arg: function->m_args) {
         visit_function_arg(&arg);
     }
 
-    if(function->return_type) {
-        visit_type(*function->return_type);
+    if(function->m_return_type) {
+        visit_type(function->m_return_type);
     }
 
-    visit_block_statement(function->block.get());
+    visit_block_statement(function->m_block.get());
 }
-void Visitor::visit_return_statement(const ReturnStatement* return_statement) {
+void Visitor::visit_return_statement(ReturnStatement* return_statement) {
     if(return_statement->value) {
         visit_expr(return_statement->value->get());
     }
 }
-void Visitor::visit_expr(const Expr* expr) {
+void Visitor::visit_expr(Expr* expr) {
     switch(expr->kind()) {
         case ExprKind::BinExpr:
             return visit_binary_expr((BinExpr*) expr);
@@ -82,39 +82,39 @@ void Visitor::visit_expr(const Expr* expr) {
             return visit_let_expr((LetExpr*) expr);
     }
 }
-void Visitor::visit_binary_expr(const BinExpr* expr) {
+void Visitor::visit_binary_expr(BinExpr* expr) {
     visit_binary_op(expr->op);
     visit_expr(expr->left.get());
     visit_expr(expr->right.get());
 }
-void Visitor::visit_unary_expr(const UnaryExpr* expr) {
+void Visitor::visit_unary_expr(UnaryExpr* expr) {
     visit_unary_op(expr->op);
     visit_expr(expr->expr.get());
 }
-void Visitor::visit_variable(const Variable* variable) {
+void Visitor::visit_variable(Variable* variable) {
     visit_variable_name(variable->name);
 }
-void Visitor::visit_var_decl(const VarDecl* var_decl) {
+void Visitor::visit_var_decl(VarDecl* var_decl) {
     visit_variable_name(var_decl->name);
 
     if(var_decl->type) {
         visit_type(*var_decl->type);
     }
 }
-void Visitor::visit_number_constant(const NumberConstant* expr) {
+void Visitor::visit_number_constant(NumberConstant* expr) {
     
 }
-void Visitor::visit_call_expr(const CallExpr* expr) {
+void Visitor::visit_call_expr(CallExpr* expr) {
     visit_function_name(expr->fn_name);
     for(const auto& arg: expr->args) {
         visit_call_arg(arg.get());
     }
 }
-void Visitor::visit_assignment_expr(const AssignmentExpr* expr) {
+void Visitor::visit_assignment_expr(AssignmentExpr* expr) {
     visit_expr(expr->lhs.get());
     visit_expr(expr->rhs.get());
 }
-void Visitor::visit_let_expr(const LetExpr* expr) {
+void Visitor::visit_let_expr(LetExpr* expr) {
     visit_var_decl(expr->var_decl.get());
 
     if(expr->rhs) {
@@ -124,20 +124,18 @@ void Visitor::visit_let_expr(const LetExpr* expr) {
 
 void Visitor::visit_binary_op(BinOp op) {}
 void Visitor::visit_unary_op(UnaryOp op) {}
-void Visitor::visit_variable_name(const Identifier& name) {
+void Visitor::visit_variable_name(Identifier& name) {
     visit_identifier(name);
 }
-void Visitor::visit_function_name(const Identifier& name) {
+void Visitor::visit_function_name(Identifier& name) {
     visit_identifier(name);
 }
-void Visitor::visit_identifier(const Identifier& identifier) {}
-void Visitor::visit_type(const Identifier& type) {
-    visit_identifier(type);
-}
-void Visitor::visit_function_arg(const VarDecl* arg) {
+void Visitor::visit_identifier(Identifier& identifier) {}
+void Visitor::visit_type(Type* type) {}
+void Visitor::visit_function_arg(VarDecl* arg) {
     visit_var_decl(arg);
 }
-void Visitor::visit_call_arg(const Expr* arg) {
+void Visitor::visit_call_arg(Expr* arg) {
     visit_expr(arg);
 }
 }

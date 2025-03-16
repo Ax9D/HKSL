@@ -8,6 +8,7 @@ namespace HKSL {
 class SymbolResolver {
     public: 
         SymbolResolver() = default;
+        // void register_function(const FunctionDef* function);
         void register_variable_ref(const Variable* variable, const VarDecl* decl);
         void register_function_ref(const CallExpr* call_expr, const Function* decl);
 
@@ -20,7 +21,8 @@ class SymbolResolver {
 
 class CompilationContext {
     public:
-        CompilationContext(std::unique_ptr<AST> ast);
+        CompilationContext();
+        void set_ast(std::unique_ptr<AST> ast);
         AST& get_ast();
         SymbolResolver& symbol_resolver();
         TypeRegistry& type_registry();

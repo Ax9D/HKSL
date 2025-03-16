@@ -9,13 +9,13 @@ let x = 1 - a == 3;
 
 fn foo() {}
 
-fn bar(x: u32) {
+fn bar(x: float) {
     let y = 2;
-    let z: i32 = y + 3;
-    let w: bool;
+    let z: float = y + 3;
+    let w;
 }
 
-fn mul(x: u32, y: u32) -> u32 {
+fn mul(x: float, y: float1) -> float {
     let z = 2;
     x = z * 2;
     y = 5;
@@ -43,3 +43,19 @@ fn mul(x: u32, y: u32) -> u32 {
 
     return 5;
 }
+
+
+
+
+let x: float = 2;
+let y = x; // y: float; based on typeof(x) being float
+
+
+let x = 2; // x: float; based on the rhs being constant 2
+let y = x; // y: float; based on typeof(x) being float
+
+let x;
+let y = x; // y: typeof(x)
+y = vec2(0.2, 0.2) + y;
+
+x = y; // x: typeof(y)

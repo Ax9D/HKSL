@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Context.h>
 #include <AST/AST.h>
 #include <Parse/Lexer.h>
 
@@ -7,8 +8,8 @@ namespace HKSL {
 
 class Parser {
     public:
-        Parser(const Token* tokens);
-        AST program();
+        Parser(CompilationContext&, const Token* tokens);
+        std::unique_ptr<AST> program();
         std::unique_ptr<Statement> statement();
         std::unique_ptr<Statement> expr_statement();
         std::unique_ptr<BlockStatement> block();
@@ -31,7 +32,7 @@ class Parser {
         std::unique_ptr<Variable> variable();
         std::unique_ptr<VarDecl> var_decl();
         Identifier identifier();
-        Identifier type();
+        Type* type();
     private:
         const Token& current() const;
         const Token& next() const;
@@ -41,9 +42,9 @@ class Parser {
         bool consume(std::initializer_list<TokenKind> kinds, Token* out_consumed = nullptr);
         bool consume(TokenKind kind, Token* out_consumed = nullptr);  
         void unexpected_token();
-        void expect(TokenKind kind, const char* error = nullptr);
-
+        void expect(TokenKind kind, Token* out_consumed = nullptr, const char* error = nullptr);
         const Token* remaining;
+        CompilationContext& context;
 };
 
 }
