@@ -4,7 +4,7 @@
 #include <Analysis/TypeCheck.h>
 #include <cassert>
 #include <format>
-#include <unordered_map>
+
 namespace HKSL {
 Type* TypeInferenceVisitor::type_of(const Expr *expr) {
   auto ty = type_of_expr(expr);

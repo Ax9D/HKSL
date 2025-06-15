@@ -2,7 +2,7 @@
 
 #include <AST.h>
 #include <Context.h>
-#include <Analysis/Visitor.h>
+#include <Visitor.h>
 #include <vector>
 #include <unordered_map>
 #include <functional>

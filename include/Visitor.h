@@ -5,7 +5,7 @@
 namespace HKSL {
 class Visitor {
     public:
-        ~Visitor() = default;
+        virtual ~Visitor() = default;
         virtual void visit(AST& ast);
         virtual void visit_statement(Statement* statement);
         virtual void visit_expr_statement(ExprStatement* expr);

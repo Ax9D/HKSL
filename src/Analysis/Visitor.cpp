@@ -1,6 +1,6 @@
 #include "AST.h"
 #include "Util.h"
-#include <Analysis/Visitor.h>
+#include <Visitor.h>
 
 namespace HKSL {
 void Visitor::visit(AST& ast) {

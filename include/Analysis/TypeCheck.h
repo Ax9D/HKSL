@@ -1,10 +1,5 @@
 #pragma once
-#include <cstddef>
-#include <cstdint>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <Analysis/Visitor.h>
+#include <Visitor.h>
 #include <Context.h>
 #include <Typing.h>
 
