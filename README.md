@@ -7,7 +7,7 @@ This is a simple shader language that I've been working on. It's a simple langua
 Currently, there is a parser that can parse the language and generate an AST.
 The plan is to write a full compiler that will atleast be able emit [SPIR-V](https://docs.vulkan.org/guide/latest/what_is_spirv.html) of simple RGB triangle shader in Vulkan.
 
-Currently the plan is to use [MLIR](https://mlir.llvm.org/) as the intermediate representation, and then use the MLIR to generate the SPIR-V.
+Currently the plan is to use [MLIR](https://mlir.llvm.org/) for codegen and generate SPIR-V using the spirv dialect.
 
 Even though Hikari is written in Rust, I've chosen to write the compiler in C++ as it's easier to work with MLIR in C++ currently. I might write a Rust version of the compiler in the future :)
 
