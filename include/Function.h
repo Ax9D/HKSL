@@ -6,6 +6,7 @@
 namespace HKSL {
 class FunctionDef {
     public:
+        virtual ~FunctionDef() = default;
         virtual const char* name() const = 0;
         virtual Type* arg_at(size_t i) const = 0;
         virtual size_t n_args() const = 0;
@@ -13,8 +14,9 @@ class FunctionDef {
 };
 
 class LibraryFunction: public FunctionDef {
-    public: 
+    public:
         LibraryFunction(const std::string& name, std::initializer_list<Type*> args, Type* return_type);
+        virtual ~LibraryFunction() = default;
         const char* name() const override;
         Type* arg_at(size_t i) const override;
         size_t n_args() const override;

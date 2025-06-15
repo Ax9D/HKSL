@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <string>
 
 namespace HKSL {
@@ -6,7 +6,7 @@ namespace HKSL {
 class ASTPrinter;
 
 struct ASTPrint {
-    ~ASTPrint() = default;
+    virtual ~ASTPrint() = default;
     virtual void print(ASTPrinter& printer) const = 0;
 };
 
